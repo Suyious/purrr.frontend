@@ -16,6 +16,9 @@ This repository contains the frontend code for **Purrr.chat**, a random chat app
 - **Tailwind CSS**: For UI styling
 - **TypeScript**: For type safety and better development experience.
 
+## Related Repositories
+- [Purrr.chat Frontend](https://github.com/yourusername/purrr-frontend)
+
 ## Installation
 
 1. Clone the repository:

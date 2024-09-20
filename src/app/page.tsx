@@ -1,6 +1,7 @@
 "use client"
 import Chat from "@/components/sections/Chat";
 import Greeting from "@/components/sections/Greeting";
+import NotConnected from "@/components/sections/NotConnected";
 import StartChatting from "@/components/sections/StartChatting";
 import WaitingForChat from "@/components/sections/WaitingForChat";
 import { useChatSocket } from "@/hooks/useChatSocket";
@@ -12,7 +13,7 @@ export default function Home() {
   let content;
 
   if (!isConnected) {
-    content = "Not Connected";
+    content = <NotConnected/>;
   } else {  // if connected to server
     if (!user) {
       content = <Greeting onSubmit={setUserName} />;

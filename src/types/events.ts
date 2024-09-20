@@ -20,7 +20,7 @@ export enum ServerEvents {
 export interface ClientToServerEvents {
     [ClientEvents.INIT_USER]: (data: { name: string }) => void;
     [ClientEvents.FIND_PARTNER]: () => void;
-    [ClientEvents.SEND_MESSAGE]: (data: { message: string }) => void;
+    [ClientEvents.SEND_MESSAGE]: (data: { message: string|null, image: string|null }) => void;
     [ClientEvents.SHARE_IMAGE]: (data: { image: string }) => void;
     [ClientEvents.DISCONNECT_PARTNER]: () => void;
 }

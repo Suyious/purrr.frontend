@@ -8,7 +8,7 @@ export const useChatSocket = () => {
 
     const SOCKET_SERVER_URL = 'http://localhost:3007';
 
-    const [socket, setSocket] = useState<Socket | null>(null);
+    const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
     const [user, setUser] = useState<string | null>(null);
     const [partner, setPartner] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
@@ -63,10 +63,10 @@ export const useChatSocket = () => {
         socket?.emit(ClientEvents.FIND_PARTNER);
     }, [socket]);
 
-    const sendMessage = useCallback((message: string) => {
+    const sendMessage = useCallback((message: string|null = null, image:string|null = null) => {
         if (socket && partner) {
-          socket.emit(ClientEvents.SEND_MESSAGE, { message });
-          setMessages(prevMessages => [...prevMessages, { from: 'You', body: message, image: null }]);
+          socket.emit(ClientEvents.SEND_MESSAGE, { message, image });
+          setMessages(prevMessages => [...prevMessages, { from: 'You', body: message, image }]);
         }
       }, [socket, partner]);
 

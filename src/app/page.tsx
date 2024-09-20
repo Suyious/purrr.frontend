@@ -8,7 +8,7 @@ import { useChatSocket } from "@/hooks/useChatSocket";
 
 export default function Home() {
 
-  const SOCKET_SERVER_URL = process.env.SERVER_URL ? process.env.SERVER_URL: 'http://localhost:3007'; 
+  const SOCKET_SERVER_URL = process.env.SOCKET_SERVER_URL ? process.env.SOCKET_SERVER_URL: 'http://localhost:3007'; 
   const { user, partner, messages, isConnected, isWaiting, setUserName, findPartner, sendMessage } = useChatSocket(SOCKET_SERVER_URL);
 
   let content;

@@ -17,7 +17,7 @@ This repository contains the frontend code for **Purrr.chat**, a random chat app
 - **TypeScript**: For type safety and better development experience.
 
 ## Related Repositories
-- [Purrr.chat Frontend](https://github.com/yourusername/purrr-frontend)
+- [Purrr.chat Backend](https://github.com/yourusername/purrr-backend)
 
 ## Installation
 

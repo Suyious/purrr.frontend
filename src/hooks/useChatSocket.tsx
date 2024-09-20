@@ -4,9 +4,7 @@ import { Message } from "@/types/messages";
 import { useCallback, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-export const useChatSocket = () => {
-
-    const SOCKET_SERVER_URL = process.env.SERVER_URL ? process.env.SERVER_URL: 'http://localhost:3007';
+export const useChatSocket = (SOCKET_SERVER_URL: string) => {
 
     const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
     const [user, setUser] = useState<string | null>(null);

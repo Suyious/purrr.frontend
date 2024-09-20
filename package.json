@@ -1,6 +1,7 @@
 {
   "name": "purrr",
   "version": "0.1.0",
+  "description": "frontend for purrr (random chat)",
   "private": true,
   "scripts": {
     "dev": "next dev",

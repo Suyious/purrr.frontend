@@ -6,7 +6,7 @@ import { io, Socket } from "socket.io-client";
 
 export const useChatSocket = () => {
 
-    const SOCKET_SERVER_URL = process.env.SERVER_URL || 'http://localhost:3007';
+    const SOCKET_SERVER_URL = process.env.SERVER_URL ? process.env.SERVER_URL: 'http://localhost:3007';
 
     const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
     const [user, setUser] = useState<string | null>(null);
@@ -16,6 +16,7 @@ export const useChatSocket = () => {
     const [messages, setMessages] = useState<Message[]>([]);
 
     useEffect(() => {
+        console.log(SOCKET_SERVER_URL);
         const newSocket = io(SOCKET_SERVER_URL) as Socket<ServerToClientEvents, ClientToServerEvents>;
         setSocket(newSocket);
 

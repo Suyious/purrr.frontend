@@ -52,7 +52,7 @@ export const useChatSocket = () => {
             newSocket.disconnect();
         };
 
-    }, [])
+    }, [SOCKET_SERVER_URL])
 
     const setUserName = useCallback((name: string) => {
         socket?.emit(ClientEvents.INIT_USER, { name });

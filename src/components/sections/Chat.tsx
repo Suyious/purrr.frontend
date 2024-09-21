@@ -1,4 +1,6 @@
 import AttachmentIcon from "@/assets/icons/attachment";
+import ExitIcon from "@/assets/icons/exit";
+import RefreshIcon from "@/assets/icons/refresh";
 import SmileyIcon from "@/assets/icons/smiley";
 import { Message } from "@/types/messages";
 import Image from "next/image";
@@ -8,9 +10,11 @@ type ChatProps = {
     partner: string,
     messages: Message[],
     onMessage: (message: string|null, image: string|null) => void,
+    onStop: () => void,
+    onReconnect: () => void,
 }
 
-export default function Chat({ partner, onMessage, messages }: ChatProps) {
+export default function Chat({ partner, onMessage, messages, onStop, onReconnect }: ChatProps) {
 
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
@@ -49,6 +53,11 @@ export default function Chat({ partner, onMessage, messages }: ChatProps) {
         }
     }
 
+    function onRefresh() {
+        onStop();
+        onReconnect();
+    }
+
     return (
         <section className="w-full flex justify-center items-center relative">
 
@@ -63,9 +72,15 @@ export default function Chat({ partner, onMessage, messages }: ChatProps) {
             </div>
 
             <header className="fixed top-0 left-0 w-full bg-background">
-                <div className="w-[1080px] max-w-full p-4 m-auto">
-                    <h4>You&apos;re connected to</h4>
-                    <h2>{partner}</h2>
+                <div className="w-[1080px] max-w-full p-4 m-auto flex justify-between items-end">
+                    <div className="">
+                        <h4 className="text-[0.8em]">You&apos;re connected to</h4>
+                        <h2>{partner}</h2>
+                    </div>
+                    <div className="flex gap-2">
+                        <button onClick={onRefresh}><RefreshIcon/></button>
+                        <button onClick={onStop}><ExitIcon/></button>
+                    </div>
                 </div>
             </header>
 

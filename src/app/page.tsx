@@ -8,7 +8,17 @@ import { useChatSocket } from "@/hooks/useChatSocket";
 
 export default function Home() {
  
-  const { user, partner, messages, isConnected, isWaiting, setUserName, findPartner, sendMessage } = useChatSocket();
+  const {
+    user,
+    partner,
+    messages,
+    isConnected,
+    isWaiting,
+    setUserName,
+    findPartner,
+    sendMessage,
+    disconnect
+  } = useChatSocket();
 
   let content;
 
@@ -22,7 +32,7 @@ export default function Home() {
         if (!partner) { // if user hasn't allowed to find matches
           content = <StartChatting name={user} onConnect={findPartner} />;
         } else { // if matches found
-          content = <Chat partner={partner} onMessage={sendMessage} messages={messages}/>;
+          content = <Chat partner={partner} onMessage={sendMessage} messages={messages} onStop={disconnect} onReconnect={findPartner}/>;
         }
       } else { // if user is waiting for a partner
         content = <WaitingForChat />;

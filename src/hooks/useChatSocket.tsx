@@ -48,6 +48,10 @@ export const useChatSocket = () => {
             setMessages(prevMessages => [...prevMessages, data]);
         });
 
+        newSocket.on(ServerEvents.PARTNER_DISCONNECTED, () => {
+            setPartner(null);
+        })
+
         return () => {
             newSocket.disconnect();
         };
@@ -66,12 +70,16 @@ export const useChatSocket = () => {
         socket?.emit(ClientEvents.FIND_PARTNER);
     }, [socket]);
 
-    const sendMessage = useCallback((message: string|null = null, image:string|null = null) => {
+    const sendMessage = useCallback((message: string | null = null, image: string | null = null) => {
         if (socket && partner) {
-          socket.emit(ClientEvents.SEND_MESSAGE, { message, image });
-          setMessages(prevMessages => [...prevMessages, { from: 'You', body: message, image }]);
+            socket.emit(ClientEvents.SEND_MESSAGE, { message, image });
+            setMessages(prevMessages => [...prevMessages, { from: 'You', body: message, image }]);
         }
-      }, [socket, partner]);
+    }, [socket, partner]);
+
+    const disconnect = useCallback(() => {
+        socket?.emit(ClientEvents.DISCONNECT_PARTNER);
+    }, [socket]);
 
     return {
         user,
@@ -82,5 +90,6 @@ export const useChatSocket = () => {
         setUserName,
         findPartner,
         sendMessage,
+        disconnect,
     }
 }

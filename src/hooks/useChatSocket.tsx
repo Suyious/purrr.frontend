@@ -10,7 +10,9 @@ export const useChatSocket = () => {
 
     const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
     const [user, setUser] = useState<string | null>(null);
+    const [gender, setGender] = useState<string | null>(null);
     const [partner, setPartner] = useState<string | null>(null);
+    const [partnerGender, setPartnerGender] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -37,8 +39,9 @@ export const useChatSocket = () => {
             console.log("Waiting to connect");
         })
 
-        newSocket.on(ServerEvents.MATCHED, ({ partnerName }) => {
+        newSocket.on(ServerEvents.MATCHED, ({ partnerName, partnerGender }) => {
             setPartner(partnerName);
+            setPartnerGender(partnerGender);
             setIsWaiting(false);
             console.log("Matched with a Partner");
             setMessages([]);
@@ -54,9 +57,10 @@ export const useChatSocket = () => {
 
     }, [SOCKET_SERVER_URL])
 
-    const setUserName = useCallback((name: string) => {
-        socket?.emit(ClientEvents.INIT_USER, { name });
+    const setUserDetails = useCallback((name: string, gender: string) => {
+        socket?.emit(ClientEvents.INIT_USER, { name, gender });
         setUser(name);
+        setGender(gender);
     }, [socket]);
 
     const findPartner = useCallback(() => {
@@ -72,11 +76,13 @@ export const useChatSocket = () => {
 
     return {
         user,
+        gender,
         partner,
+        partnerGender,
         messages,
         isConnected,
         isWaiting,
-        setUserName,
+        setUserDetails,
         findPartner,
         sendMessage,
     }

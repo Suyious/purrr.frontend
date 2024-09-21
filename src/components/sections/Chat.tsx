@@ -6,11 +6,12 @@ import { ChangeEvent, FormEvent, useRef, useState } from "react"
 
 type ChatProps = {
     partner: string,
+    partnerGender: string | null,
     messages: Message[],
     onMessage: (message: string|null, image: string|null) => void,
 }
 
-export default function Chat({ partner, onMessage, messages }: ChatProps) {
+export default function Chat({ partner, partnerGender, onMessage, messages }: ChatProps) {
 
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
@@ -65,7 +66,7 @@ export default function Chat({ partner, onMessage, messages }: ChatProps) {
             <header className="fixed top-0 left-0 w-full bg-background">
                 <div className="w-[1080px] max-w-full p-4 m-auto">
                     <h4>You&apos;re connected to</h4>
-                    <h2>{partner}</h2>
+                    <h2>{partner} ({partnerGender})</h2>
                 </div>
             </header>
 

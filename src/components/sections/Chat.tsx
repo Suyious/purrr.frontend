@@ -32,10 +32,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
 
     function isScrolledToBottom() {
         const rect = chatBottom.current?.getBoundingClientRect();
-        return (rect
-            && rect.top >= 0 && rect.left >= 0
-            && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
-            && rect.right <= (window.innerWidth || document.documentElement.clientWidth))
+        return (rect && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight));
     }
 
     const handleScroll = useCallback(() => {
@@ -57,10 +54,12 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     }, [handleScroll, unread])
 
     useEffect(() => {
-        if (isScrolledToBottom()) {
-            scrollToBottom();
-        } else {
-            setUnread(n => n + 1);
+        if(messages.length > 0) {
+            if (isScrolledToBottom()) {
+                scrollToBottom();
+            } else {
+                setUnread(n => n + 1);
+            }
         }
     }, [messages]);
 
@@ -103,7 +102,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     }
 
     return (
-        <section className="w-full flex justify-center items-center relative">
+        <section className="w-full flex justify-center items-end relative">
 
             <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full py-[5em]">
                 {messages.map((message, i) => (

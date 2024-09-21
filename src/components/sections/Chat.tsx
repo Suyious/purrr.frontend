@@ -4,7 +4,7 @@ import RefreshIcon from "@/assets/icons/refresh";
 import SmileyIcon from "@/assets/icons/smiley";
 import { Message } from "@/types/messages";
 import Image from "next/image";
-import { ChangeEvent, FormEvent, useRef, useState } from "react"
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react"
 
 type ChatProps = {
     partner: string,
@@ -19,6 +19,22 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
     const [attachment, setAttachment] = useState<string>("");
+
+    const messagesEnd = useRef<HTMLDivElement>(null);
+
+    function scrollToBottom() {
+      messagesEnd.current?.scrollIntoView({ behavior: "smooth" })
+    }
+
+    useEffect(() => {
+      const rect = messagesEnd.current?.getBoundingClientRect();
+      if (rect
+          && rect.top >= 0 && rect.left >= 0
+          && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+          && rect.right <= (window.innerWidth || document.documentElement.clientWidth)) {
+            scrollToBottom();
+          }
+    }, [messages]);
 
     function onSubmit(e: FormEvent) {
         e.preventDefault();
@@ -69,6 +85,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                         {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-full h-auto"/>}
                     </div>
                 ))}
+                <div className="messages-end" ref={messagesEnd}></div>
             </div>
 
             <header className="fixed top-0 left-0 w-full bg-background">

@@ -50,7 +50,20 @@ This repository contains the frontend code for **Purrr.chat**, a random chat app
 - `npm run lint`: Run the linter for the codebase.
 
 ## Contributing
-Feel free to fork this repository and make your own changes. Pull requests are welcome!
+Thank you for contributing to this open-source project! We strive to create a safe and collaborative environment at Purrr.chat. Please follow these contribution guidelines:
+
+### Contribution Rules
+1. **Fork the Repository**: Start by forking the repository before making any changes. 
+2. **Create a New Branch**: Use the issue title as the name to create a new branch and start implementing your changes.
+3. **Push Your Changes**: Once your changes are ready, push them to your fork, create a pull request, and wait for a review.
+4. **Review Process**: We will review your changes, and if accepted, they will be merged into the master branch.
+5. **Stay Updated**: Before starting new work, pull the latest changes from the master branch and merge them into your local branch to avoid conflicts.
+
+### Working on a Task (Important)
+1. **Open Issues**: Please open issues for new features in the issues section.
+2. **Request Assignment**: If you wish to work on an existing issue, request to be assigned to it.
+3. **No Unassigned Work**: If you start working on an issue without being assigned, we may not prioritize reviewing your changes, and they may be rejected in most cases.
+4. **Assigned Work**: Once assigned, you can start working and must follow the contribution guidelines to avoid merge conflicts.
 
 ## License
 This project is licensed under the ISC License.

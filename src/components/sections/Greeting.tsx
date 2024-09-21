@@ -1,5 +1,5 @@
 import RightIcon from "@/assets/icons/right";
-import { FormEvent, useRef } from "react";
+import { FormEvent, useEffect, useRef } from "react";
 
 type GreetingProps = {
     onSubmit: (name: string) => void
@@ -8,6 +8,15 @@ type GreetingProps = {
 export default function Greeting({ onSubmit }: GreetingProps) {
 
     const name = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      if (typeof window != 'undefined' && window.localStorage) {
+        const username = localStorage.getItem('username');
+        if (username) {
+          onSubmit(username);
+        }
+      }
+    })
 
     function onSubmitPrevent(e: FormEvent) {
         e.preventDefault();

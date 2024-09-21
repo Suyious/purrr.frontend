@@ -57,6 +57,9 @@ export const useChatSocket = () => {
     const setUserName = useCallback((name: string) => {
         socket?.emit(ClientEvents.INIT_USER, { name });
         setUser(name);
+        if (typeof window != 'undefined' && window.localStorage) {
+          localStorage.setItem("username", name);
+        }
     }, [socket]);
 
     const findPartner = useCallback(() => {

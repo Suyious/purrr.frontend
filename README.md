@@ -54,8 +54,8 @@ Thank you for contributing to this open-source project! We strive to create a sa
 
 ### Contribution Rules
 1. **Fork the Repository**: Start by forking the repository before making any changes. 
-2. **Create a New Branch**: Use your name to create a new branch and start implementing your changes.
-3. **Push Your Changes**: Once your changes are ready, push them to your fork and wait for a review.
+2. **Create a New Branch**: Use the issue title as the name to create a new branch and start implementing your changes.
+3. **Push Your Changes**: Once your changes are ready, push them to your fork, create a pull request, and wait for a review.
 4. **Review Process**: We will review your changes, and if accepted, they will be merged into the master branch.
 5. **Stay Updated**: Before starting new work, pull the latest changes from the master branch and merge them into your local branch to avoid conflicts.
 

@@ -1,10 +1,11 @@
 import AttachmentIcon from "@/assets/icons/attachment";
 import ExitIcon from "@/assets/icons/exit";
 import RefreshIcon from "@/assets/icons/refresh";
+import ScrollDown from "@/assets/icons/scrollDown";
 import SmileyIcon from "@/assets/icons/smiley";
 import { Message } from "@/types/messages";
 import Image from "next/image";
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react"
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react"
 
 type ChatProps = {
     partner: string,
@@ -18,22 +19,49 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
 
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
-    const [attachment, setAttachment] = useState<string>("");
+    const chatBottom = useRef<HTMLDivElement>(null);
 
-    const messagesEnd = useRef<HTMLDivElement>(null);
+    const [attachment, setAttachment] = useState<string>("");
+    const [unread, setUnread] = useState<number>(0);
+
 
     function scrollToBottom() {
-      messagesEnd.current?.scrollIntoView({ behavior: "smooth" })
+        setUnread(0);
+        chatBottom.current?.scrollIntoView({ behavior: "smooth" })
     }
 
+    function isScrolledToBottom() {
+        const rect = chatBottom.current?.getBoundingClientRect();
+        return (rect
+            && rect.top >= 0 && rect.left >= 0
+            && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+            && rect.right <= (window.innerWidth || document.documentElement.clientWidth))
+    }
+
+    const handleScroll = useCallback(() => {
+        if(isScrolledToBottom()) {
+            setUnread(0);
+        }
+    }, [])
+
     useEffect(() => {
-      const rect = messagesEnd.current?.getBoundingClientRect();
-      if (rect
-          && rect.top >= 0 && rect.left >= 0
-          && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
-          && rect.right <= (window.innerWidth || document.documentElement.clientWidth)) {
+        if(unread > 0) {
+            window.addEventListener('scroll', handleScroll);
+        } else {
+            window.removeEventListener('scroll', handleScroll);
+        }
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        }
+    }, [handleScroll, unread])
+
+    useEffect(() => {
+        if (isScrolledToBottom()) {
             scrollToBottom();
-          }
+        } else {
+            setUnread(n => n + 1);
+        }
     }, [messages]);
 
     function onSubmit(e: FormEvent) {
@@ -85,8 +113,13 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                         {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-full h-auto"/>}
                     </div>
                 ))}
-                <div className="messages-end" ref={messagesEnd}></div>
+                <div ref={chatBottom}></div>
             </div>
+
+            { unread > 0 && <button onClick={scrollToBottom} className="fixed bottom-[5em]">
+                <div className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute right-0">{unread}</div>
+                <ScrollDown/>
+            </button> }
 
             <header className="fixed top-0 left-0 w-full bg-background">
                 <div className="w-[1080px] max-w-full p-4 m-auto flex justify-between items-end">
@@ -110,7 +143,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                     <AttachmentIcon width="20"/>
                 </button>
                 <input ref={message} className="bg-inherit flex-1 outline-none text-sm" type="text" placeholder="Send a message"/>
-                <button className="text-sm px-4 rounded-md hover:bg-slate-400" type="submit">Send</button>
+                <button className="text-sm px-4 rounded-md" type="submit">Send</button>
             </form>
         </section>
     )

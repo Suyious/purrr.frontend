@@ -3,7 +3,7 @@ import { Kalnia } from "next/font/google"
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Purrr.chat | Connect Now",
+  title: "Purrr.chat | Talk to Strangers Online | Connect Now",
   description: "You can now connect with a random stranger online and chat.",
   metadataBase: new URL(process.env.BASE_URL || "http://localhost:3000"),
 };

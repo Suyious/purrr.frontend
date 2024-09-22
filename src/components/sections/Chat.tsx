@@ -31,34 +31,41 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         chatBottom.current?.scrollIntoView({ behavior: "smooth" })
     }
 
-    function isScrolledToBottom() {
+    function isScrolledToBottom(offsetBefore = 60, offsetAfter = 350) {
         const rect = chatBottom.current?.getBoundingClientRect();
-        return (rect && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight));
+        return (rect && rect.bottom >= (window.innerHeight || document.documentElement.clientHeight) - offsetBefore
+                     && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) + offsetAfter);
     }
 
-    const handleScroll = useCallback(() => {
-        if(isScrolledToBottom()) {
+    function isScrollAvailable() {
+        const rect = chatBottom.current?.getBoundingClientRect();
+        return (rect && !(rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) - 60))
+    }
+
+    const markReadIfViewed = useCallback(() => {
+        if(isScrolledToBottom(0)) {
             setUnread(0);
         }
     }, [])
 
     useEffect(() => {
         if(unread > 0) {
-            window.addEventListener('scroll', handleScroll);
+            window.addEventListener('scroll', markReadIfViewed);
         } else {
-            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('scroll', markReadIfViewed);
         }
 
         return () => {
-            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('scroll', markReadIfViewed);
         }
-    }, [handleScroll, unread])
+    }, [markReadIfViewed, unread])
 
     useEffect(() => {
-        if(messages.length > 0) {
-            if (isScrolledToBottom()) {
+        if(messages.length > 0 && isScrollAvailable()) {
+            const last_message = messages[messages.length - 1];
+            if (isScrolledToBottom() || last_message.from === "You") {
                 scrollToBottom();
-            } else {
+            } else if(last_message.from !== "You"){
                 setUnread(n => n + 1);
             }
         }
@@ -113,7 +120,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                 {messages.map((message, i) => (
                     (message.body || message.image) && <div key={i} className="flex flex-col px-4" style={{ alignItems: message.from === "You" ? "end": "start"}}>
                         { (i === 0 || message.from !== messages[i - 1].from) && <h5 className="text-[0.8em] pt-4">{message.from}</h5> }
-                        {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto"/>}
+                        {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]"/>}
                         {message.body && message.body.trim() !== "" && <h3>{message.body}</h3>}
                     </div>
                 ))}

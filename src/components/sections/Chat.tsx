@@ -1,4 +1,5 @@
 import AttachmentIcon from "@/assets/icons/attachment";
+import CloseIcon from "@/assets/icons/close";
 import ExitIcon from "@/assets/icons/exit";
 import RefreshIcon from "@/assets/icons/refresh";
 import ScrollDown from "@/assets/icons/scrollDown";
@@ -77,7 +78,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
             img = attachment;
             setAttachment("");
         }
-        onMessage(msg, img);
+        if(msg || img) onMessage(msg, img);
     }
 
     function onFileChange(e: ChangeEvent<HTMLInputElement>) {
@@ -101,6 +102,10 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         onReconnect();
     }
 
+    function clearAttachment() {
+        setAttachment("");
+    }
+
     return (
         <section className="w-full flex justify-center items-end relative">
 
@@ -108,8 +113,8 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                 {messages.map((message, i) => (
                     (message.body || message.image) && <div key={i} className="flex flex-col p-4" style={{ alignItems: message.from === "You" ? "end": "start"}}>
                         <h5 className="text-[0.8em]">{message.from}</h5>
+                        {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto"/>}
                         {message.body && message.body.trim() !== "" && <h3>{message.body}</h3>}
-                        {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-full h-auto"/>}
                     </div>
                 ))}
                 <div ref={chatBottom}></div>
@@ -134,6 +139,12 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
             </header>
 
             <form onSubmit={onSubmit} className="fixed bg-background bottom-[1em] border-[1px] border-foreground p-2 w-[1080px] max-w-[95vw] flex">
+                { attachment.length > 0 && <div className="absolute -top-24 border-[1px] border-foreground rounded-lg">
+                    <button type="button" onClick={clearAttachment} className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute -top-2 -right-2">
+                        <CloseIcon width="18" fill="background"/>
+                    </button>
+                    <Image src={decodeURIComponent(attachment)} alt="Image" width="0" height="0" sizes="100vw" className="w-[5em] h-[5em] rounded-lg object-cover" />
+                </div> }
                 <button type="button" className="mr-2 w-[30px] h-[30px] flex justify-center items-center rounded-md">
                     <SmileyIcon/>
                 </button>

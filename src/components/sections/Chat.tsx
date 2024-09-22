@@ -111,8 +111,8 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
 
             <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full py-[5em]">
                 {messages.map((message, i) => (
-                    (message.body || message.image) && <div key={i} className="flex flex-col p-4" style={{ alignItems: message.from === "You" ? "end": "start"}}>
-                        <h5 className="text-[0.8em]">{message.from}</h5>
+                    (message.body || message.image) && <div key={i} className="flex flex-col px-4" style={{ alignItems: message.from === "You" ? "end": "start"}}>
+                        { (i === 0 || message.from !== messages[i - 1].from) && <h5 className="text-[0.8em] pt-4">{message.from}</h5> }
                         {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto"/>}
                         {message.body && message.body.trim() !== "" && <h3>{message.body}</h3>}
                     </div>

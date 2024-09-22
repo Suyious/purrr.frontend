@@ -5,6 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Purrr.chat | Connect Now",
   description: "You can now connect with a random stranger online and chat.",
+  metadataBase: new URL(process.env.BASE_URL || "http://localhost:3000"),
 };
 
 export const viewport: Viewport = {

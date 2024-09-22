@@ -31,7 +31,7 @@ export default function Greeting({ onSubmit }: GreetingProps) {
             <form onSubmit={onSubmitPrevent} className="flex flex-col items-center gap-4 w-full">
                 <label className="flex flex-col items-center text-center w-full">
                     <span className="text-[1.2em] font-[500]">Your Name</span>
-                    <input ref={name} className="text-[3em] bg-inherit text-inherit font-[400] width-[10em] max-w-[90%] text-center outline-none border-b-2 border-foreground" type="text" placeholder="Pick a Name"/>
+                    <input maxLength={30} ref={name} className="text-[3em] bg-inherit text-inherit font-[400] width-[10em] max-w-[90%] text-center outline-none border-b-2 border-foreground" type="text" placeholder="Pick a Name"/>
                 </label>
                 <button className="flex font-[500]">Continue to Chat <RightIcon/> </button>
             </form>

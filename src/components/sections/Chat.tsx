@@ -79,6 +79,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         if(message.current){
             if(message.current.value.trim() !== "") msg = message.current.value;
             message.current.value = "";
+            message.current.focus();
         }
 
         if(attachment.length !== 0) {

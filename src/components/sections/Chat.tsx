@@ -79,6 +79,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         if(message.current){
             if(message.current.value.trim() !== "") msg = message.current.value;
             message.current.value = "";
+            message.current.focus();
         }
 
         if(attachment.length !== 0) {
@@ -159,7 +160,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                     <input accept="image/*" onChange={onFileChange} ref={fileinput} type="file" className="hidden"/>
                     <AttachmentIcon width="20"/>
                 </button>
-                <input ref={message} autoFocus onBlur={(e) => e.target.focus()} className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message"/>
+                <input ref={message} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message"/>
                 <button className="text-sm px-4 rounded-md" type="submit">Send</button>
             </form>
         </section>

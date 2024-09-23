@@ -14,6 +14,7 @@ export const useChatSocket = () => {
     const [isConnected, setIsConnected] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [readIndex, setReadIndex] = useState<number|null>(null);
 
     useEffect(() => {
         const newSocket = io(SOCKET_SERVER_URL) as Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -48,6 +49,10 @@ export const useChatSocket = () => {
             setMessages(prevMessages => [...prevMessages, data]);
         });
 
+        newSocket.on(ServerEvents.MARK_AS_READ, ({ messageId }) => {
+            setReadIndex(messageId);
+        })
+
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, () => {
             setPartner(null);
         })
@@ -77,6 +82,12 @@ export const useChatSocket = () => {
         }
     }, [socket, partner]);
 
+    const readMessage = useCallback((messageId: number) => {
+        if(socket && partner) {
+            socket.emit(ClientEvents.READ_MESSAGE, { messageId });
+        }
+    }, [socket, partner])
+
     const disconnect = useCallback(() => {
         socket?.emit(ClientEvents.DISCONNECT_PARTNER);
     }, [socket]);
@@ -87,9 +98,11 @@ export const useChatSocket = () => {
         messages,
         isConnected,
         isWaiting,
+        readIndex,
         setUserName,
         findPartner,
         sendMessage,
+        readMessage,
         disconnect,
     }
 }

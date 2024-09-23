@@ -14,9 +14,11 @@ type ChatProps = {
     onMessage: (message: string|null, image: string|null) => void,
     onStop: () => void,
     onReconnect: () => void,
+    readIndex: number | null,
+    readMessage: (messageId: number) => void,
 }
 
-export default function Chat({ partner, onMessage, messages, onStop, onReconnect }: ChatProps) {
+export default function Chat({ partner, onMessage, messages, onStop, onReconnect, readIndex, readMessage }: ChatProps) {
 
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
@@ -26,10 +28,11 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     const [unread, setUnread] = useState<number>(0);
 
 
-    function scrollToBottom() {
+    const scrollToBottom = useCallback(() => {
         setUnread(0);
+        readMessage(messages.length - 1);
         chatBottom.current?.scrollIntoView({ behavior: "smooth" })
-    }
+    }, [messages.length, readMessage])
 
     function isScrolledToBottom(offsetBefore = 60, offsetAfter = 350) {
         const rect = chatBottom.current?.getBoundingClientRect();
@@ -45,8 +48,9 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     const markReadIfViewed = useCallback(() => {
         if(isScrolledToBottom(0)) {
             setUnread(0);
+            readMessage(messages.length - 1);
         }
-    }, [])
+    }, [messages.length, readMessage])
 
     useEffect(() => {
         if(unread > 0) {
@@ -69,7 +73,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                 setUnread(n => n + 1);
             }
         }
-    }, [messages]);
+    }, [messages, scrollToBottom]);
 
     function onSubmit(e: FormEvent) {
         e.preventDefault();
@@ -123,6 +127,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                         { (i === 0 || message.from !== messages[i - 1].from) && <h5 className="text-[0.8em] pt-4">{message.from}</h5> }
                         {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]"/>}
                         {message.body && message.body.trim() !== "" && <h3>{message.body}</h3>}
+                        { i === readIndex && <p>Read by {partner}</p>}
                     </div>
                 ))}
                 <div ref={chatBottom}></div>
@@ -146,7 +151,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                 </div>
             </header>
 
-            <form onSubmit={onSubmit} className="fixed bg-background bottom-[1em] border-[1px] border-foreground p-2 w-[1080px] max-w-[95vw] flex">
+            <form onSubmit={onSubmit} className="fixed bg-background bottom-[1em] border-[1px] border-foreground p-2 w-[1080px] max-w-[95vw] flex rounded-[50px]">
                 { attachment.length > 0 && <div className="absolute -top-24 border-[1px] border-foreground rounded-lg">
                     <button type="button" onClick={clearAttachment} className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute -top-2 -right-2">
                         <CloseIcon width="18" fill="background"/>

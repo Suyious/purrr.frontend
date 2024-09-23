@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Kalnia } from "next/font/google"
 import "./globals.css";
+import { kalnia, lato } from "@/assets/fonts";
 
 export const metadata: Metadata = {
   title: "Purrr.chat | Talk to Strangers Online | Connect Now",
@@ -14,8 +14,6 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 }
 
-const kalnia = Kalnia({ subsets: ['latin'] })
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={kalnia.className}>
+      <body className={kalnia.variable + " " + lato.variable}>
         {children}
       </body>
     </html>

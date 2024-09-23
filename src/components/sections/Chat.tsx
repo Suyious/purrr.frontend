@@ -37,9 +37,9 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                      && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) + offsetAfter);
     }
 
-    function isScrollAvailable() {
+    function isScrollAvailable(offset = 60) {
         const rect = chatBottom.current?.getBoundingClientRect();
-        return (rect && !(rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) - 60))
+        return (rect && !(rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) - offset))
     }
 
     const markReadIfViewed = useCallback(() => {
@@ -79,7 +79,6 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         if(message.current){
             if(message.current.value.trim() !== "") msg = message.current.value;
             message.current.value = "";
-            message.current.focus();
         }
 
         if(attachment.length !== 0) {
@@ -115,7 +114,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     }
 
     return (
-        <section className="w-full flex justify-center items-end relative">
+        <section className={"w-full flex justify-center items-end relative font-text"}>
 
             <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full py-[5em]">
                 {messages.map((message, i) => (
@@ -133,7 +132,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                 <ScrollDown/>
             </button> }
 
-            <header className="fixed top-0 left-0 w-full bg-background">
+            <header className="fixed top-0 left-0 w-full bg-background font-display">
                 <div className="w-[1080px] max-w-full p-4 m-auto flex justify-between items-end">
                     <div className="">
                         <h4 className="text-[0.8em]">You&apos;re connected to</h4>
@@ -160,7 +159,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                     <input accept="image/*" onChange={onFileChange} ref={fileinput} type="file" className="hidden"/>
                     <AttachmentIcon width="20"/>
                 </button>
-                <input ref={message} className="bg-inherit flex-1 outline-none text-sm" type="text" placeholder="Send a message"/>
+                <input ref={message} autoFocus onBlur={(e) => e.target.focus()} className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message"/>
                 <button className="text-sm px-4 rounded-md" type="submit">Send</button>
             </form>
         </section>

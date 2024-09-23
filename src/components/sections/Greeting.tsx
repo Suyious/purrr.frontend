@@ -16,7 +16,7 @@ export default function Greeting({ onSubmit }: GreetingProps) {
           onSubmit(username);
         }
       }
-    })
+    }, [])
 
     function onSubmitPrevent(e: FormEvent) {
         e.preventDefault();

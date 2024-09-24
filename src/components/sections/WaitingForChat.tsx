@@ -1,4 +1,11 @@
+import { useEffect } from "react";
+
 export default function WaitingForChat() {
+
+    useEffect(() => {
+        document.title = "Waiting to Connect ... | On Purrr.chat";
+    }, [])
+
     return (
         <section className="w-full h-full flex justify-center items-center">
             <div className="text-center">

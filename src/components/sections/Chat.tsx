@@ -7,6 +7,7 @@ import SmileyIcon from "@/assets/icons/smiley";
 import { Message } from "@/types/messages";
 import Image from "next/image";
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react"
+import ChatBubble from "../ChatBubble";
 
 type ChatProps = {
     partner: string,
@@ -125,13 +126,8 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         <section className={"w-full flex justify-center items-end relative font-text"}>
 
             <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full py-[5em]">
-                {messages.map((message, i) => (
-                    (message.body || message.image) && <div key={i} className="flex flex-col px-4" style={{ alignItems: message.from === "You" ? "end": "start"}}>
-                        { (i === 0 || message.from !== messages[i - 1].from) && <h5 className="text-[0.8em] pt-4">{message.from}</h5> }
-                        {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]"/>}
-                        {message.body && message.body.trim() !== "" && <h3 className="max-w-[20em] break-words">{message.body}</h3>}
-                        { i === readIndex && <p className="text-[0.7em] self-end">Read by {partner}</p>}
-                    </div>
+                {messages.map((_message, i) => (
+                  <ChatBubble messages={messages} i={i} readIndex={readIndex} partner={partner} key={i} />
                 ))}
                 <div ref={chatBottom}></div>
             </div>

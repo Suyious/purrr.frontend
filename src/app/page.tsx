@@ -14,10 +14,12 @@ export default function Home() {
     messages,
     isConnected,
     isWaiting,
+    readIndex,
     setUserName,
     findPartner,
     sendMessage,
-    disconnect
+    disconnect,
+    readMessage,
   } = useChatSocket();
 
   let content;
@@ -32,7 +34,10 @@ export default function Home() {
         if (!partner) { // if user hasn't allowed to find matches
           content = <StartChatting name={user} onConnect={findPartner} />;
         } else { // if matches found
-          content = <Chat partner={partner} onMessage={sendMessage} messages={messages} onStop={disconnect} onReconnect={findPartner}/>;
+          content = <Chat partner={partner}
+                          onMessage={sendMessage} messages={messages}
+                          onStop={disconnect} onReconnect={findPartner}
+                          readIndex={readIndex} readMessage={readMessage}/>;
         }
       } else { // if user is waiting for a partner
         content = <WaitingForChat />;

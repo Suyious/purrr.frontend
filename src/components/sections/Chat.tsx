@@ -10,6 +10,7 @@ import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from
 
 type ChatProps = {
     partner: string,
+    partnerGone: boolean,
     messages: Message[],
     onMessage: (message: string|null, image: string|null) => void,
     onStop: () => void,
@@ -18,7 +19,7 @@ type ChatProps = {
     readMessage: (messageId: number) => void,
 }
 
-export default function Chat({ partner, onMessage, messages, onStop, onReconnect, readIndex, readMessage }: ChatProps) {
+export default function Chat({ partner, partnerGone, onMessage, messages, onStop, onReconnect, readIndex, readMessage }: ChatProps) {
 
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
@@ -143,10 +144,17 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
 
             <header className="fixed top-0 left-0 w-full bg-background font-display">
                 <div className="w-[1080px] max-w-full p-4 m-auto flex justify-between items-end">
+                  { partnerGone ?
+                    <div className="">
+                        <h4 className="text-[0.8em]">You are no longer connected to anyone</h4>
+                        <button onClick={onRefresh}>Reconnect</button>
+                    </div>
+                    :
                     <div className="">
                         <h4 className="text-[0.8em]">You&apos;re connected to</h4>
                         <h2>{partner}</h2>
                     </div>
+                  }
                     <div className="flex gap-2">
                         <button onClick={onRefresh}><RefreshIcon/></button>
                         <button onClick={onStop}><ExitIcon/></button>
@@ -155,6 +163,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
             </header>
 
             <form onSubmit={onSubmit} className="fixed bg-background bottom-[1em] border-[1px] border-foreground p-2 w-[1080px] max-w-[95vw] flex rounded-[50px]">
+              <fieldset disabled={partnerGone}>
                 { attachment.length > 0 && <div className="absolute -top-24 border-[1px] border-foreground rounded-lg">
                     <button type="button" onClick={clearAttachment} className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute -top-2 -right-2">
                         <CloseIcon width="18" fill="background"/>
@@ -168,8 +177,9 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                     <input accept="image/*" onChange={onFileChange} ref={fileinput} type="file" className="hidden"/>
                     <AttachmentIcon width="20"/>
                 </button>
-                <input ref={message} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message"/>
+                <input ref={message} disabled={partnerGone} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message"/>
                 <button className="text-sm px-4 rounded-md" type="submit">Send</button>
+              </fieldset>
             </form>
 
         </section>

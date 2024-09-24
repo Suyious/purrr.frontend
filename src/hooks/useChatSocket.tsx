@@ -53,6 +53,14 @@ export const useChatSocket = () => {
             setReadIndex(messageId);
         })
 
+        newSocket.on(ServerEvents.SHOW_TYPING, () => {
+
+        });
+
+        newSocket.on(ServerEvents.HIDE_TYPING, () => {
+
+        });
+
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, () => {
             setPartner(null);
         })
@@ -115,6 +123,8 @@ export const useChatSocket = () => {
         findPartner,
         sendMessage,
         readMessage,
+        typingStart,
+        typingStop,
         disconnect,
     }
 }

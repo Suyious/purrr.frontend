@@ -7,7 +7,7 @@ import WaitingForChat from "@/components/sections/WaitingForChat";
 import { useChatSocket } from "@/hooks/useChatSocket";
 
 export default function Home() {
- 
+
   const {
     user,
     partner,
@@ -18,8 +18,10 @@ export default function Home() {
     setUserName,
     findPartner,
     sendMessage,
-    disconnect,
     readMessage,
+    typingStart,
+    typingStop,
+    disconnect,
   } = useChatSocket();
 
   let content;
@@ -37,7 +39,8 @@ export default function Home() {
           content = <Chat partner={partner}
                           onMessage={sendMessage} messages={messages}
                           onStop={disconnect} onReconnect={findPartner}
-                          readIndex={readIndex} readMessage={readMessage}/>;
+                          readIndex={readIndex} readMessage={readMessage}
+                          typingStart={typingStart} typingStop={typingStop}/>;
         }
       } else { // if user is waiting for a partner
         content = <WaitingForChat />;

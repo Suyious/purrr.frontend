@@ -16,13 +16,18 @@ type ChatProps = {
     onReconnect: () => void,
     readIndex: number | null,
     readMessage: (messageId: number) => void,
+    typingStart: () => void,
+    typingStop: () => void,
 }
 
-export default function Chat({ partner, onMessage, messages, onStop, onReconnect, readIndex, readMessage }: ChatProps) {
+export default function Chat({ partner, onMessage, messages, onStop, onReconnect, readIndex, readMessage, typingStart, typingStop }: ChatProps) {
 
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
     const chatBottom = useRef<HTMLDivElement>(null);
+
+    let timer: number;
+    const typingTimeout = 1500;
 
     const [attachment, setAttachment] = useState<string>("");
     const [unread, setUnread] = useState<number>(0);
@@ -77,6 +82,16 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
             }
         }
     }, [messages, readMessage, scrollToBottom]);
+
+    message.current?.addEventListener('keypress', () => {
+        window.clearTimeout(timer);
+        typingStart();
+    });
+
+    message.current?.addEventListener('keyup', () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => typingStop, typingTimeout)
+    });
 
     function onSubmit(e: FormEvent) {
         e.preventDefault();

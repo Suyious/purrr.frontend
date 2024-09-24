@@ -29,7 +29,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     const chatBottom = useRef<HTMLDivElement>(null);
 
     let timer: number;
-    const typingTimeout = 1500;
+    const typingTimeout = 1000;
     let typing = false;
 
     const [attachment, setAttachment] = useState<string>("");
@@ -173,8 +173,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                 <div className="w-[1080px] max-w-full p-4 m-auto flex justify-between items-end">
                     <div className="">
                         <h4 className="text-[0.8em]">You&apos;re connected to</h4>
-                        <h2>{partner}</h2>
-                        { partnerTyping && <small><i>Typing...</i></small> }
+                        <h2>{partner} { partnerTyping && <small><i>Typing...</i></small> }</h2>
                     </div>
                     <div className="flex gap-2">
                         <button onClick={onRefresh}><RefreshIcon/></button>

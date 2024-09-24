@@ -88,6 +88,18 @@ export const useChatSocket = () => {
         }
     }, [socket, partner])
 
+    const typingStart = useCallback(() => {
+      if (socket && partner) {
+        socket.emit(ClientEvents.TYPING_START);
+      }
+    }, [socket, partner]);
+
+    const typingStop = useCallback(() => {
+      if (socket && partner) {
+        socket.emit(ClientEvents.TYPING_STOP);
+      }
+    }, [socket, partner]);
+
     const disconnect = useCallback(() => {
         socket?.emit(ClientEvents.DISCONNECT_PARTNER);
     }, [socket]);

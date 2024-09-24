@@ -11,6 +11,7 @@ export const useChatSocket = () => {
     const [socket, setSocket] = useState<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
     const [user, setUser] = useState<string | null>(null);
     const [partner, setPartner] = useState<string | null>(null);
+    const [partnerGone, setPartnerGone] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -29,6 +30,7 @@ export const useChatSocket = () => {
             setIsConnected(false);
             setUser(null);
             setPartner(null);
+            setPartnerGone(false);
             setIsWaiting(false);
             console.log('Disconnected from server');
         });
@@ -40,6 +42,7 @@ export const useChatSocket = () => {
 
         newSocket.on(ServerEvents.MATCHED, ({ partnerName }) => {
             setPartner(partnerName);
+            setPartnerGone(false);
             setIsWaiting(false);
             console.log("Matched with a Partner");
             setMessages([]);
@@ -55,6 +58,7 @@ export const useChatSocket = () => {
 
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, () => {
             setPartner(null);
+            setPartnerGone(true);
         })
 
         return () => {
@@ -95,6 +99,7 @@ export const useChatSocket = () => {
     return {
         user,
         partner,
+        partnerGone,
         messages,
         isConnected,
         isWaiting,

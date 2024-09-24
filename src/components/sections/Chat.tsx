@@ -27,12 +27,11 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     const [attachment, setAttachment] = useState<string>("");
     const [unread, setUnread] = useState<number>(0);
 
-
     const scrollToBottom = useCallback(() => {
         setUnread(0);
-        readMessage(messages.length - 1);
         chatBottom.current?.scrollIntoView({ behavior: "smooth" })
-    }, [messages.length, readMessage])
+        readMessage(messages.length - 1);
+    }, [messages, readMessage])
 
     function isScrolledToBottom(offsetBefore = 60, offsetAfter = 350) {
         const rect = chatBottom.current?.getBoundingClientRect();
@@ -46,7 +45,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     }
 
     const markReadIfViewed = useCallback(() => {
-        if(isScrolledToBottom(0)) {
+        if(isScrolledToBottom(60, 0)) {
             setUnread(0);
             readMessage(messages.length - 1);
         }
@@ -65,15 +64,19 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     }, [markReadIfViewed, unread])
 
     useEffect(() => {
-        if(messages.length > 0 && isScrollAvailable()) {
+        if(messages.length > 0) {
             const last_message = messages[messages.length - 1];
-            if (isScrolledToBottom() || last_message.from === "You") {
-                scrollToBottom();
-            } else if(last_message.from !== "You"){
-                setUnread(n => n + 1);
+            if(!isScrollAvailable()) {
+                readMessage(messages.length - 1);
+            } else {
+                if (isScrolledToBottom() || last_message.from === "You") {
+                    scrollToBottom();
+                } else if(last_message.from !== "You"){
+                    setUnread(n => n + 1);
+                }
             }
         }
-    }, [messages, scrollToBottom]);
+    }, [messages, readMessage, scrollToBottom]);
 
     function onSubmit(e: FormEvent) {
         e.preventDefault();
@@ -126,8 +129,8 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                     (message.body || message.image) && <div key={i} className="flex flex-col px-4" style={{ alignItems: message.from === "You" ? "end": "start"}}>
                         { (i === 0 || message.from !== messages[i - 1].from) && <h5 className="text-[0.8em] pt-4">{message.from}</h5> }
                         {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]"/>}
-                        {message.body && message.body.trim() !== "" && <h3>{message.body}</h3>}
-                        { i === readIndex && <p>Read by {partner}</p>}
+                        {message.body && message.body.trim() !== "" && <h3 className="max-w-[20em] break-words">{message.body}</h3>}
+                        { i === readIndex && <p className="text-[0.7em] self-end">Read by {partner}</p>}
                     </div>
                 ))}
                 <div ref={chatBottom}></div>
@@ -168,6 +171,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                 <input ref={message} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message"/>
                 <button className="text-sm px-4 rounded-md" type="submit">Send</button>
             </form>
+
         </section>
     )
 }

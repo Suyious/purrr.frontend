@@ -21,6 +21,7 @@ export default function Home() {
     readMessage,
     typingStart,
     typingStop,
+    partnerTyping,
     disconnect,
   } = useChatSocket();
 
@@ -40,7 +41,7 @@ export default function Home() {
                           onMessage={sendMessage} messages={messages}
                           onStop={disconnect} onReconnect={findPartner}
                           readIndex={readIndex} readMessage={readMessage}
-                          typingStart={typingStart} typingStop={typingStop}/>;
+                          typingStart={typingStart} typingStop={typingStop} partnerTyping={partnerTyping} />;
         }
       } else { // if user is waiting for a partner
         content = <WaitingForChat />;

@@ -15,6 +15,7 @@ export const useChatSocket = () => {
     const [isWaiting, setIsWaiting] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [readIndex, setReadIndex] = useState<number|null>(null);
+    const [partnerTyping, setPartnerTyping] = useState(false);
 
     useEffect(() => {
         const newSocket = io(SOCKET_SERVER_URL) as Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -54,11 +55,11 @@ export const useChatSocket = () => {
         })
 
         newSocket.on(ServerEvents.SHOW_TYPING, () => {
-
+            setPartnerTyping(true);
         });
 
         newSocket.on(ServerEvents.HIDE_TYPING, () => {
-
+            setPartnerTyping(false);
         });
 
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, () => {
@@ -125,6 +126,7 @@ export const useChatSocket = () => {
         readMessage,
         typingStart,
         typingStop,
+        partnerTyping,
         disconnect,
     }
 }

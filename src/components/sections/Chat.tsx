@@ -28,9 +28,11 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
     const [unread, setUnread] = useState<number>(0);
 
     const scrollToBottom = useCallback(() => {
-        setUnread(0);
+        if(!document.hidden) {
+            setUnread(0);
+            readMessage(messages.length - 1);
+        }
         chatBottom.current?.scrollIntoView({ behavior: "smooth" })
-        readMessage(messages.length - 1);
     }, [messages, readMessage])
 
     function isScrolledToBottom(offsetBefore = 60, offsetAfter = 350) {
@@ -43,34 +45,20 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         const rect = chatBottom.current?.getBoundingClientRect();
         return (rect && !(rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) - offset))
     }
-
-    const markReadIfViewed = useCallback(() => {
-        if(isScrolledToBottom(60, 0)) {
-            setUnread(0);
-            readMessage(messages.length - 1);
-        }
-    }, [messages.length, readMessage])
-
-    useEffect(() => {
-        if(unread > 0) {
-            window.addEventListener('scroll', markReadIfViewed);
-        } else {
-            window.removeEventListener('scroll', markReadIfViewed);
-        }
-
-        return () => {
-            window.removeEventListener('scroll', markReadIfViewed);
-        }
-    }, [markReadIfViewed, unread])
-
+    
     useEffect(() => {
         if(messages.length > 0) {
             const last_message = messages[messages.length - 1];
             if(!isScrollAvailable()) {
-                readMessage(messages.length - 1);
+                if(!document.hidden) {
+                    readMessage(messages.length - 1);
+                } else {
+                    setUnread(n => n + 1);
+                }
             } else {
                 if (isScrolledToBottom() || last_message.from === "You") {
                     scrollToBottom();
+                    if(document.hidden) setUnread(n => n + 1);
                 } else if(last_message.from !== "You"){
                     setUnread(n => n + 1);
                 }
@@ -78,6 +66,35 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         }
     }, [messages, readMessage, scrollToBottom]);
 
+    const markReadIfViewed = useCallback(() => {
+        if(isScrolledToBottom() || !isScrollAvailable()) {
+            setUnread(0);
+            if(!document.hidden) readMessage(messages.length - 1);
+        }
+    }, [messages.length, readMessage])
+
+    useEffect(() => {
+        if (unread > 0) {
+            document.title = `${partner}: ${unread} New Message(s) | On Purrr.chat`
+            window.addEventListener('scroll', markReadIfViewed);
+        } else {
+            document.title = `Connected with ${partner} | On Purrr.chat`
+            window.removeEventListener('scroll', markReadIfViewed);
+        }
+
+        return () => {
+            window.removeEventListener('scroll', markReadIfViewed);
+        }
+    }, [markReadIfViewed, partner, unread])
+
+    useEffect(() => {
+        document.addEventListener("visibilitychange", markReadIfViewed);
+
+        return () => {
+            document.removeEventListener("visibilitychange", markReadIfViewed);
+        }
+    }, [markReadIfViewed]) 
+    
     function onSubmit(e: FormEvent) {
         e.preventDefault();
 
@@ -130,7 +147,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                         { (i === 0 || message.from !== messages[i - 1].from) && <h5 className="text-[0.8em] pt-4">{message.from}</h5> }
                         {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]"/>}
                         {message.body && message.body.trim() !== "" && <h3 className="max-w-[20em] break-words">{message.body}</h3>}
-                        { i === readIndex && <p className="text-[0.7em] self-end">Read by {partner}</p>}
+                        { i === readIndex && (message.from === "You" ? <p className="text-[0.7em] self-end">Read by {partner}</p>: <div className="h-[1em]"/>)}
                     </div>
                 ))}
                 <div ref={chatBottom}></div>

@@ -38,6 +38,7 @@ export default function Chat({
     const [attachment, setAttachment] = useState<string>("");
     const [unread, setUnread] = useState<number>(0);
     const [typing, setTyping] = useState<boolean>(false);
+    const [replyingTo, setReplyingTo] = useState<number | null>(null);
 
     const scrollToBottom = useCallback(() => {
         if (!document.hidden) {
@@ -107,6 +108,10 @@ export default function Chat({
         }
     }, [markReadIfViewed])
 
+    useEffect(() => {
+        scrollToBottom();
+    }, [replyingTo, scrollToBottom])
+
     const onKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
         if (e.key === "Enter") return;
 
@@ -143,11 +148,11 @@ export default function Chat({
         if (msg || img) onMessage(msg, img);
         stopTyping();
         setTyping(false);
+        setReplyingTo(null);
     }
 
     function onFileChange(event: ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0];
-        console.log(file);
         if (file) {
             // Array.from(files).forEach(file => {
             const reader = new FileReader();
@@ -160,6 +165,7 @@ export default function Chat({
             reader.readAsDataURL(file);
             // })
         }
+        message.current?.focus();
     }
 
     function onRefresh() {
@@ -169,6 +175,13 @@ export default function Chat({
 
     function clearAttachment() {
         setAttachment("");
+        if(fileinput.current) fileinput.current.value = "";
+        message.current?.focus();
+    }
+
+    function replyTo(messageId: number | null) {
+        setReplyingTo(messageId);
+        message.current?.focus();
     }
 
     function setEmojiSize(str: string): string {
@@ -187,7 +200,9 @@ export default function Chat({
     return (
         <section className={"w-full flex justify-center items-end relative font-text"}>
 
-            <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full py-[5em]">
+            <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full pt-[5em]" style={{
+                paddingBottom: replyingTo === null ? "5em": "9em"
+            }}>
                 {messages.map((message, i) => (
                     (message.body || message.image) &&
                     <div key={i} className="group flex flex-col px-4" style={{
@@ -196,14 +211,20 @@ export default function Chat({
                         {(i === 0 || message.from !== messages[i - 1].from) &&
                             <h5 className="text-[0.8em] pt-4">{message.from}</h5>}
                         {message.image &&
-                            <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]" />}
+                            <div className="flex items-center gap-4" style={{ flexDirection: message.from === "You" ? "row-reverse" : "row" }}>
+                                <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]" />
+                                <div className="hidden group-hover:flex items-center gap-2">
+                                    <button onClick={() => replyTo(i)}><Reply width="18" /></button>
+                                    <button><Menu width="20" /></button>
+                                </div>
+                            </div>}
                         {message.body && message.body.trim() !== "" &&
                             <div className="flex items-center gap-4" style={{ flexDirection: message.from === "You" ? "row-reverse" : "row" }}>
                                 <h3 className="max-w-[20em] break-words" style={{ fontSize: setEmojiSize(message.body) }}>{message.body}</h3>
-                                <div className="hidden group-hover:flex items-center gap-2">
-                                    <button><Reply width="18" /></button>
+                                {!message.image && <div className="hidden group-hover:flex items-center gap-2">
+                                    <button onClick={() => replyTo(i)}><Reply width="18" /></button>
                                     <button><Menu width="20" /></button>
-                                </div>
+                                </div>}
                             </div>}
                         {i === readIndex && (message.from === "You" ?
                             <p className="text-[0.7em] self-end">Read by {partner}</p> :
@@ -231,22 +252,32 @@ export default function Chat({
                 </div>
             </header>
 
-            <form onSubmit={onSubmit} className="fixed bg-background bottom-[1em] border-[1px] border-foreground p-2 w-[1080px] max-w-[95vw] flex rounded-[50px]">
+            <form onSubmit={onSubmit} className="fixed bottom-[1em] w-[1080px] max-w-[95vw]">
                 {attachment.length > 0 && <div className="absolute -top-24 border-[1px] border-foreground rounded-lg">
                     <button type="button" onClick={clearAttachment} className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute -top-2 -right-2">
                         <CloseIcon width="18" fill="background" />
                     </button>
                     <Image src={decodeURIComponent(attachment)} alt="Image" width="0" height="0" sizes="100vw" className="w-[5em] h-[5em] rounded-lg object-cover" />
                 </div>}
-                <button type="button" className="mr-2 w-[30px] h-[30px] flex justify-center items-center rounded-md">
-                    <SmileyIcon />
-                </button>
-                <button onClick={() => fileinput.current?.click()} type="button" className="mr-2 w-[25px] h-[25px] flex justify-center items-center rounded-md">
-                    <input accept="image/*" onChange={onFileChange} ref={fileinput} type="file" className="hidden" />
-                    <AttachmentIcon width="20" />
-                </button>
-                <input ref={message} onKeyDown={onKeyDown} onKeyUp={onKeyUp} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message" />
-                <button className="text-sm px-4 rounded-md" type="submit">Send</button>
+                {replyingTo !== null &&
+                    <div className="w-full h-16 border-foreground border-t-2 px-2">
+                        <button type="button" onClick={() => replyTo(null)} className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute -top-2 -right-2">
+                            <CloseIcon width="18" fill="background" />
+                        </button>
+                        <p className="text-[0.8em] font-[300] pt-1">Replying to <span className="font-bold">{messages[replyingTo].from}</span></p>
+                        <h3>{messages[replyingTo].image && "(Attachment)"} {messages[replyingTo].body}</h3>
+                    </div>}
+                <div className="flex items-center bg-background rounded-[50px] border-[1px] border-foreground p-2">
+                    <button type="button" className="mr-2 w-[30px] h-[30px] flex justify-center items-center rounded-md">
+                        <SmileyIcon />
+                    </button>
+                    <button onClick={() => fileinput.current?.click()} type="button" className="mr-2 w-[25px] h-[25px] flex justify-center items-center rounded-md">
+                        <input accept="image/*" onChange={onFileChange} ref={fileinput} type="file" className="hidden" />
+                        <AttachmentIcon width="20" />
+                    </button>
+                    <input ref={message} onKeyDown={onKeyDown} onKeyUp={onKeyUp} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message" />
+                    <button className="text-sm px-4 rounded-md" type="submit">Send</button>
+                </div>
             </form>
 
         </section>

@@ -16,13 +16,21 @@ type ChatProps = {
     onReconnect: () => void,
     readIndex: number | null,
     readMessage: (messageId: number) => void,
+    typingStart: () => void,
+    typingStop: () => void,
+    partnerTyping: boolean,
 }
 
-export default function Chat({ partner, onMessage, messages, onStop, onReconnect, readIndex, readMessage }: ChatProps) {
+export default function Chat({ partner, onMessage, messages, onStop, onReconnect, readIndex,
+                                readMessage, typingStart, typingStop, partnerTyping }: ChatProps) {
 
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
     const chatBottom = useRef<HTMLDivElement>(null);
+
+    let timer: number;
+    const typingTimeout = 1000;
+    let typing = false;
 
     const [attachment, setAttachment] = useState<string>("");
     const [unread, setUnread] = useState<number>(0);
@@ -93,7 +101,25 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
         return () => {
             document.removeEventListener("visibilitychange", markReadIfViewed);
         }
-    }, [markReadIfViewed]) 
+    }, [markReadIfViewed])
+  
+    message.current?.addEventListener('keypress', (e) => {
+        if (e.key === "Enter") return;
+
+        window.clearTimeout(timer);
+        if (!typing) {
+          typingStart();
+          typing = true;
+        }
+    });
+
+    message.current?.addEventListener('keyup', () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          typingStop();
+          typing = false;
+        }, typingTimeout)
+    });
     
     function onSubmit(e: FormEvent) {
         e.preventDefault();
@@ -111,6 +137,8 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
             setAttachment("");
         }
         if(msg || img) onMessage(msg, img);
+        typingStop();
+        typing = false;
     }
 
     function onFileChange(e: ChangeEvent<HTMLInputElement>) {
@@ -162,7 +190,7 @@ export default function Chat({ partner, onMessage, messages, onStop, onReconnect
                 <div className="w-[1080px] max-w-full p-4 m-auto flex justify-between items-end">
                     <div className="">
                         <h4 className="text-[0.8em]">You&apos;re connected to</h4>
-                        <h2>{partner}</h2>
+                        <h2>{partner} { partnerTyping && <small><i>Typing...</i></small> }</h2>
                     </div>
                     <div className="flex gap-2">
                         <button onClick={onRefresh}><RefreshIcon/></button>

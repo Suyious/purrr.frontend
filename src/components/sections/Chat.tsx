@@ -169,6 +169,19 @@ export default function Chat({
         setAttachment("");
     }
 
+    function setEmojiSize(str: string): string {
+        const emojiRegex: RegExp = new RegExp(/[\uD800-\uDBFF]|[\u2702-\u27B0]|[\uF680-\uF6C0]|[\u24C2-\uF251]/g);
+        const matchedEmojis = str.match(emojiRegex);
+
+        if(matchedEmojis !== null && matchedEmojis.length > 0 && matchedEmojis.join('') === str) {
+            const length = matchedEmojis.length;
+            if(length <= 2) return "4em";
+            if(length <= 4) return "3em";
+            if(length <= 8) return "2em";
+        }
+        return "1em";
+    }
+
     return (
         <section className={"w-full flex justify-center items-end relative font-text"}>
 
@@ -177,7 +190,7 @@ export default function Chat({
                     (message.body || message.image) && <div key={i} className="flex flex-col px-4" style={{ alignItems: message.from === "You" ? "end" : "start" }}>
                         {(i === 0 || message.from !== messages[i - 1].from) && <h5 className="text-[0.8em] pt-4">{message.from}</h5>}
                         {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]" />}
-                        {message.body && message.body.trim() !== "" && <h3 className="max-w-[20em] break-words">{message.body}</h3>}
+                        {message.body && message.body.trim() !== "" && <h3 className="max-w-[20em] break-words" style={{ fontSize: setEmojiSize(message.body) }}>{message.body}</h3>}
                         {i === readIndex && (message.from === "You" ? <p className="text-[0.7em] self-end">Read by {partner}</p> : <div className="h-[1em]" />)}
                     </div>
                 ))}

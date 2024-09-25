@@ -1,9 +1,16 @@
+import { useEffect } from "react"
+
 type StartChattingProps = {
     name: string,
     onConnect: () => void
 }
 
 export default function StartChatting({ name, onConnect }: StartChattingProps) {
+
+    useEffect(() => {
+        document.title = "Purrr.chat | Connect Now with a Random Stranger";
+    }, [])
+
     return (
         <section className="w-full h-full flex justify-center items-center">
             <div className="text-center">

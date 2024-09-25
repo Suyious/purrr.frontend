@@ -97,13 +97,13 @@ export const useChatSocket = () => {
         }
     }, [socket, partner])
 
-    const typingStart = useCallback(() => {
+    const startTyping = useCallback(() => {
       if (socket && partner) {
         socket.emit(ClientEvents.TYPING_START);
       }
     }, [socket, partner]);
 
-    const typingStop = useCallback(() => {
+    const stopTyping = useCallback(() => {
       if (socket && partner) {
         socket.emit(ClientEvents.TYPING_STOP);
       }
@@ -120,13 +120,13 @@ export const useChatSocket = () => {
         isConnected,
         isWaiting,
         readIndex,
+        partnerTyping,
         setUserName,
         findPartner,
         sendMessage,
         readMessage,
-        typingStart,
-        typingStop,
-        partnerTyping,
+        startTyping,
+        stopTyping,
         disconnect,
     }
 }

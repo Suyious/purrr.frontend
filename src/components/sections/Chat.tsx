@@ -1,7 +1,9 @@
 import AttachmentIcon from "@/assets/icons/attachment";
 import CloseIcon from "@/assets/icons/close";
 import ExitIcon from "@/assets/icons/exit";
+import Menu from "@/assets/icons/menu";
 import RefreshIcon from "@/assets/icons/refresh";
+import Reply from "@/assets/icons/reply";
 import ScrollDown from "@/assets/icons/scrollDown";
 import SmileyIcon from "@/assets/icons/smiley";
 import { Message } from "@/types/messages";
@@ -11,19 +13,19 @@ import { ChangeEvent, FormEvent, KeyboardEventHandler, useCallback, useEffect, u
 type ChatProps = {
     partner: string,
     messages: Message[],
+    readIndex: number | null,
+    partnerTyping: boolean,
     onMessage: (message: string | null, image: string | null) => void,
     onStop: () => void,
     onReconnect: () => void,
-    readIndex: number | null,
     readMessage: (messageId: number) => void,
-    typingStart: () => void,
-    typingStop: () => void,
-    partnerTyping: boolean,
+    startTyping: () => void,
+    stopTyping: () => void,
 }
 
 export default function Chat({ 
-    partner, onMessage, messages, onStop, onReconnect, readIndex,
-    readMessage, typingStart, typingStop, partnerTyping }: ChatProps
+    partner, messages, readIndex, partnerTyping, onMessage, onStop,
+    onReconnect, readMessage, startTyping, stopTyping }: ChatProps
 ) {
 
     const message = useRef<HTMLInputElement>(null);
@@ -110,7 +112,7 @@ export default function Chat({
 
         window.clearTimeout(timer);
         if (!typing) {
-            typingStart();
+            startTyping();
             setTyping(true);
         }
     };
@@ -118,7 +120,7 @@ export default function Chat({
     const onKeyUp = () => {
         window.clearTimeout(timer);
         timer = window.setTimeout(() => {
-            typingStop();
+            stopTyping();
             setTyping(false);
         }, TYPINGTIMEOUT)
     };
@@ -139,7 +141,7 @@ export default function Chat({
             setAttachment("");
         }
         if (msg || img) onMessage(msg, img);
-        typingStop();
+        stopTyping();
         setTyping(false);
     }
 
@@ -187,11 +189,25 @@ export default function Chat({
 
             <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full py-[5em]">
                 {messages.map((message, i) => (
-                    (message.body || message.image) && <div key={i} className="flex flex-col px-4" style={{ alignItems: message.from === "You" ? "end" : "start" }}>
-                        {(i === 0 || message.from !== messages[i - 1].from) && <h5 className="text-[0.8em] pt-4">{message.from}</h5>}
-                        {message.image && <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]" />}
-                        {message.body && message.body.trim() !== "" && <h3 className="max-w-[20em] break-words" style={{ fontSize: setEmojiSize(message.body) }}>{message.body}</h3>}
-                        {i === readIndex && (message.from === "You" ? <p className="text-[0.7em] self-end">Read by {partner}</p> : <div className="h-[1em]" />)}
+                    (message.body || message.image) &&
+                    <div key={i} className="group flex flex-col px-4" style={{
+                        alignItems: message.from === "You" ? "end" : "start"
+                    }}>
+                        {(i === 0 || message.from !== messages[i - 1].from) &&
+                            <h5 className="text-[0.8em] pt-4">{message.from}</h5>}
+                        {message.image &&
+                            <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]" />}
+                        {message.body && message.body.trim() !== "" &&
+                            <div className="flex items-center gap-4" style={{ flexDirection: message.from === "You" ? "row-reverse" : "row" }}>
+                                <h3 className="max-w-[20em] break-words" style={{ fontSize: setEmojiSize(message.body) }}>{message.body}</h3>
+                                <div className="hidden group-hover:flex items-center gap-2">
+                                    <button><Reply width="18" /></button>
+                                    <button><Menu width="20" /></button>
+                                </div>
+                            </div>}
+                        {i === readIndex && (message.from === "You" ?
+                            <p className="text-[0.7em] self-end">Read by {partner}</p> :
+                            <div className="h-[1em]" />)}
                     </div>
                 ))}
                 <div ref={chatBottom}></div>

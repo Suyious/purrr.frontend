@@ -15,7 +15,7 @@ type ChatProps = {
     messages: Message[],
     readIndex: number | null,
     partnerTyping: boolean,
-    onMessage: (message: string | null, image: string | null) => void,
+    onMessage: (message: string | null, image: string | null, reply: number | null) => void,
     onStop: () => void,
     onReconnect: () => void,
     readMessage: (messageId: number) => void,
@@ -133,7 +133,7 @@ export default function Chat({
     function onSubmit(e: FormEvent) {
         e.preventDefault();
 
-        let msg: string | null = null, img: string | null = null;
+        let msg: string | null = null, img: string | null = null, reply: number | null = null;
 
         if (message.current) {
             if (message.current.value.trim() !== "") msg = message.current.value;
@@ -145,10 +145,15 @@ export default function Chat({
             img = attachment;
             setAttachment("");
         }
-        if (msg || img) onMessage(msg, img);
+
+        if(replyingTo !== null) {
+            reply = replyingTo;
+            setReplyingTo(null);
+        }
+
+        if (msg || img) onMessage(msg, img, reply);
         stopTyping();
         setTyping(false);
-        setReplyingTo(null);
     }
 
     function onFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -197,6 +202,11 @@ export default function Chat({
         return "1em";
     }
 
+    function truncate(str: string | null, max = 40) {
+        if(str === null) return null;
+        return str.substring(0, max) + (str.length > 40 ? "...": "")
+    }
+
     return (
         <section className={"w-full flex justify-center items-end relative font-text"}>
 
@@ -210,6 +220,13 @@ export default function Chat({
                     }}>
                         {(i === 0 || message.from !== messages[i - 1].from) &&
                             <h5 className="text-[0.8em] pt-4">{message.from}</h5>}
+                        {message.reply !== null && 
+                            <div className="flex flex-col" style={{
+                                alignItems: message.from === "You"? "end": "start",
+                            }}>
+                                <h3 className="text-[0.7em]">Replying to {messages[message.reply].from}</h3>
+                                <p className="text-[0.8em]">{messages[message.reply].image && "(Attachment)"}{truncate(messages[message.reply].body)}</p>
+                            </div>}
                         {message.image &&
                             <div className="flex items-center gap-4" style={{ flexDirection: message.from === "You" ? "row-reverse" : "row" }}>
                                 <Image src={decodeURIComponent(message.image)} alt="Image" width="0" height="0" sizes="100vw" className="w-[10em] h-auto max-h-[20em]" />
@@ -265,7 +282,7 @@ export default function Chat({
                             <CloseIcon width="18" fill="background" />
                         </button>
                         <p className="text-[0.8em] font-[300] pt-1">Replying to <span className="font-bold">{messages[replyingTo].from}</span></p>
-                        <h3>{messages[replyingTo].image && "(Attachment)"} {messages[replyingTo].body}</h3>
+                        <h3>{messages[replyingTo].image && "(Attachment)"} {truncate(messages[replyingTo].body)}</h3>
                     </div>}
                 <div className="flex items-center bg-background rounded-[50px] border-[1px] border-foreground p-2">
                     <button type="button" className="mr-2 w-[30px] h-[30px] flex justify-center items-center rounded-md">

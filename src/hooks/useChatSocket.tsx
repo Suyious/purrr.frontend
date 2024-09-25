@@ -84,10 +84,10 @@ export const useChatSocket = () => {
         socket?.emit(ClientEvents.FIND_PARTNER);
     }, [socket]);
 
-    const sendMessage = useCallback((message: string | null = null, image: string | null = null) => {
+    const sendMessage = useCallback((message: string | null = null, image: string | null = null, reply:number | null = null) => {
         if (socket && partner) {
-            socket.emit(ClientEvents.SEND_MESSAGE, { message, image });
-            setMessages(prevMessages => [...prevMessages, { from: 'You', body: message, image }]);
+            socket.emit(ClientEvents.SEND_MESSAGE, { message, image, reply });
+            setMessages(prevMessages => [...prevMessages, { from: 'You', body: message, image, reply }]);
         }
     }, [socket, partner]);
 

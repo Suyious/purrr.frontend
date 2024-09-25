@@ -24,7 +24,7 @@ export enum ServerEvents {
 export interface ClientToServerEvents {
     [ClientEvents.INIT_USER]: (data: { name: string }) => void;
     [ClientEvents.FIND_PARTNER]: () => void;
-    [ClientEvents.SEND_MESSAGE]: (data: { message: string|null, image: string|null }) => void;
+    [ClientEvents.SEND_MESSAGE]: (data: { message: string|null, image: string|null, reply: number | null }) => void;
     [ClientEvents.READ_MESSAGE]: (data: { messageId: number }) => void;
     [ClientEvents.TYPING_START]: () => void;
     [ClientEvents.TYPING_STOP]: () => void;

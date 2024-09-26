@@ -108,6 +108,10 @@ export default function Chat({
         }
     }, [markReadIfViewed])
 
+    useEffect(() => {
+        if(isScrolledToBottom(115)) scrollToBottom();
+    }, [replyingTo, scrollToBottom])
+
     const onKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
         if (e.key === "Enter") return;
 

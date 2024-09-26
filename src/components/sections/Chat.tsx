@@ -108,10 +108,6 @@ export default function Chat({
         }
     }, [markReadIfViewed])
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [replyingTo, scrollToBottom])
-
     const onKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
         if (e.key === "Enter") return;
 
@@ -271,7 +267,10 @@ export default function Chat({
                 </div>
             </header>
 
-            <form onSubmit={onSubmit} className="fixed bottom-[1em] w-[1080px] max-w-[95vw]">
+            <form onSubmit={onSubmit} className="fixed bottom-[1em] w-[1080px] max-w-[95vw] bg-background rounded-b-[50px]" style={{
+                borderTopLeftRadius: replyingTo !== null ? "0": "50px",
+                borderTopRightRadius: replyingTo !== null ? "0": "50px",
+            }}>
                 {attachment.length > 0 && <div className="absolute -top-24 border-[1px] border-foreground rounded-lg">
                     <button type="button" onClick={clearAttachment} className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute -top-2 -right-2">
                         <CloseIcon width="18" fill="background" />

@@ -8,7 +8,7 @@ import ScrollDown from "@/assets/icons/scrollDown";
 import SmileyIcon from "@/assets/icons/smiley";
 import { Message } from "@/types/messages";
 import Image from "next/image";
-import { ChangeEvent, FormEvent, KeyboardEventHandler, useCallback, useEffect, useRef, useState } from "react"
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react"
 
 type ChatProps = {
     partner: string,
@@ -31,8 +31,8 @@ export default function Chat({
     const message = useRef<HTMLInputElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
     const chatBottom = useRef<HTMLDivElement>(null);
+    const timer = useRef<number>();
 
-    let timer: number;
     const TYPINGTIMEOUT = 500;
 
     const [attachment, setAttachment] = useState<string>("");
@@ -112,23 +112,17 @@ export default function Chat({
         if(isScrolledToBottom(115)) scrollToBottom();
     }, [replyingTo, scrollToBottom])
 
-    const onKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
-        if (e.key === "Enter") return;
-
-        window.clearTimeout(timer);
+    const onMessageChange = () => {
+        window.clearTimeout(timer.current);
         if (!typing) {
             startTyping();
             setTyping(true);
         }
-    };
-
-    const onKeyUp = () => {
-        window.clearTimeout(timer);
-        timer = window.setTimeout(() => {
+        timer.current = window.setTimeout(() => {
             stopTyping();
             setTyping(false);
         }, TYPINGTIMEOUT)
-    };
+    }
 
     function onSubmit(e: FormEvent) {
         e.preventDefault();
@@ -297,7 +291,7 @@ export default function Chat({
                         <input accept="image/*" onChange={onFileChange} ref={fileinput} type="file" className="hidden" />
                         <AttachmentIcon width="20" />
                     </button>
-                    <input ref={message} onKeyDown={onKeyDown} onKeyUp={onKeyUp} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message" />
+                    <input ref={message} onChange={onMessageChange} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message" />
                     <button className="text-sm px-4 rounded-md" type="submit">Send</button>
                 </div>
             </form>

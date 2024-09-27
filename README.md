@@ -1,14 +1,20 @@
 # Purrr.chat (Frontend) 🐾
-<div style="width:100%;display:flex;justify-content:center;align-items:center;gap:30px">
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://purrr.chat/mascot.png">
-        <img src="https://purrr.chat/mascot-light.png" width="200" alt="purrr.chat Mascot">
-    </picture>
-    <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://purrr.chat/logo.png">
-        <img src="https://purrr.chat/logo-light.png?" width="200" alt="purrr.chat Logo">
-    </picture>
-</div>
+<table>
+    <tr>
+        <td>
+            <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="https://purrr.chat/mascot.png">
+                <img src="https://purrr.chat/mascot-light.png" width="200" alt="purrr.chat Mascot">
+            </picture>
+        </td>
+        <td>
+            <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="https://purrr.chat/logo.png">
+                <img src="https://purrr.chat/logo-light.png?" width="200" alt="purrr.chat Logo">
+            </picture>
+        </td>
+    </tr>
+</table>
 
 Welcome to **Purrr.chat**, the place where random chats happen, and friendships (or fun conversations) are just a click away! Whether you want to share a thought or an image, Purrr.chat lets you connect with another online user for a random chat experience.
 

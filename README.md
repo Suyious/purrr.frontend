@@ -1,5 +1,8 @@
 # Purrr.chat (Frontend) 🐾
-<div style="display:flex;justify-content:center"><img src="https://purrr.chat/icon.png" width="200" height="200" alt="purrr.chat Logo"></div>
+<div style="width:100%;display:flex;justify-content:center">
+    <img src="https://purrr.chat/icon.png?" width="200" height="200" alt="purrr.chat Logo">
+    <img src="https://purrr.chat/icon.png?" width="200" height="200" alt="purrr.chat Logo">
+</div>
 
 Welcome to **Purrr.chat**, the place where random chats happen, and friendships (or fun conversations) are just a click away! Whether you want to share a thought or an image, Purrr.chat lets you connect with another online user for a random chat experience.
 

@@ -3,6 +3,15 @@ import { ClientEvents, ClientToServerEvents, ServerEvents, ServerToClientEvents 
 import { Message } from "@/types/messages";
 import { useCallback, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import {
+    generateKeyPair,
+    deriveSharedSecret,
+    encryptMessage,
+    decryptMessage,
+    exportPublicKey,
+    importPublicKey
+} from '../utils/encryption';
+import { getKey, KeyTransaction, storeKey } from "@/utils/keyTransaction";
 
 export const useChatSocket = () => {
 
@@ -14,7 +23,7 @@ export const useChatSocket = () => {
     const [isConnected, setIsConnected] = useState(false);
     const [isWaiting, setIsWaiting] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
-    const [readIndex, setReadIndex] = useState<number|null>(null);
+    const [readIndex, setReadIndex] = useState<number | null>(null);
     const [partnerTyping, setPartnerTyping] = useState(false);
 
     useEffect(() => {
@@ -26,11 +35,15 @@ export const useChatSocket = () => {
             console.log('Connected to server');
         });
 
-        newSocket.on('disconnect', () => {
+        newSocket.on('disconnect', async () => {
             setIsConnected(false);
             setUser(null);
             setPartner(null);
             setIsWaiting(false);
+
+            await storeKey(KeyTransaction.SELF_PK, null);
+            await storeKey(KeyTransaction.PARTNER_PK, null);
+
             console.log('Disconnected from server');
         });
 
@@ -39,14 +52,27 @@ export const useChatSocket = () => {
             console.log("Waiting to connect");
         })
 
-        newSocket.on(ServerEvents.MATCHED, ({ partnerName }) => {
+        newSocket.on(ServerEvents.MATCHED, async ({ partnerName, partnerPk }) => {
             setPartner(partnerName);
+
+            const partnerPublicK = await importPublicKey(partnerPk);
+            await storeKey(KeyTransaction.PARTNER_PK, partnerPublicK);
+
             setIsWaiting(false);
             console.log("Matched with a Partner");
             setMessages([]);
         });
 
-        newSocket.on(ServerEvents.RECEIVE_MESSAGE, (data) => {
+        newSocket.on(ServerEvents.RECEIVE_MESSAGE, async (data) => {
+
+            const partnerPk = await getKey(KeyTransaction.PARTNER_PK);
+            const selfPk = await getKey(KeyTransaction.SELF_PK);
+            const sharedSecret = await deriveSharedSecret(selfPk!, partnerPk!);
+            const decryptedMsg = data.body ? await decryptMessage(data.body, sharedSecret) : null;
+            const decryptedImg = data.image? await decryptMessage(data.image, sharedSecret): null;
+
+            data.body = decryptedMsg;
+            data.image = decryptedImg;
             setMessages(prevMessages => [...prevMessages, data]);
         });
 
@@ -62,8 +88,9 @@ export const useChatSocket = () => {
             setPartnerTyping(false);
         });
 
-        newSocket.on(ServerEvents.PARTNER_DISCONNECTED, () => {
+        newSocket.on(ServerEvents.PARTNER_DISCONNECTED, async () => {
             setPartner(null);
+            await storeKey(KeyTransaction.PARTNER_PK, null);
         })
 
         return () => {
@@ -72,11 +99,16 @@ export const useChatSocket = () => {
 
     }, [SOCKET_SERVER_URL])
 
-    const setUserName = useCallback((name: string) => {
-        socket?.emit(ClientEvents.INIT_USER, { name });
+    const setUserName = useCallback(async (name: string) => {
+
+        const keyPair = await generateKeyPair();
+        const publicKey = await exportPublicKey(keyPair.publicKey);
+        await storeKey(KeyTransaction.SELF_PK, keyPair.privateKey);
+
+        socket?.emit(ClientEvents.INIT_USER, { name, publicKey });
         setUser(name);
         if (typeof window != 'undefined' && window.localStorage) {
-          localStorage.setItem("username", name);
+            localStorage.setItem("username", name);
         }
     }, [socket]);
 
@@ -84,29 +116,36 @@ export const useChatSocket = () => {
         socket?.emit(ClientEvents.FIND_PARTNER);
     }, [socket]);
 
-    const sendMessage = useCallback((message: string | null = null, image: string | null = null, reply:number | null = null) => {
+    const sendMessage = useCallback(async (message: string | null = null, image: string | null = null, reply: number | null = null) => {
         if (socket && partner) {
-            socket.emit(ClientEvents.SEND_MESSAGE, { message, image, reply });
             setMessages(prevMessages => [...prevMessages, { from: 'You', body: message, image, reply }]);
+
+            const partnerPk = await getKey(KeyTransaction.PARTNER_PK);
+            const selfPk = await getKey(KeyTransaction.SELF_PK);
+            const sharedSecret = await deriveSharedSecret(selfPk!, partnerPk!);
+            const encryptedMsg = message ? await encryptMessage(message, sharedSecret) : null;
+            const encryptedImg = image? await encryptMessage(image, sharedSecret, true): null;
+            
+            socket.emit(ClientEvents.SEND_MESSAGE, { message: encryptedMsg, image: encryptedImg, reply });
         }
     }, [socket, partner]);
 
     const readMessage = useCallback((messageId: number) => {
-        if(socket && partner) {
+        if (socket && partner) {
             socket.emit(ClientEvents.READ_MESSAGE, { messageId });
         }
     }, [socket, partner])
 
     const startTyping = useCallback(() => {
-      if (socket && partner) {
-        socket.emit(ClientEvents.TYPING_START);
-      }
+        if (socket && partner) {
+            socket.emit(ClientEvents.TYPING_START);
+        }
     }, [socket, partner]);
 
     const stopTyping = useCallback(() => {
-      if (socket && partner) {
-        socket.emit(ClientEvents.TYPING_STOP);
-      }
+        if (socket && partner) {
+            socket.emit(ClientEvents.TYPING_STOP);
+        }
     }, [socket, partner]);
 
     const disconnect = useCallback(() => {

@@ -5,4 +5,5 @@ export interface User {
     name: string | null;
     socket: Socket;
     partner: string | null;
+    publicKey: CryptoKey | null;
 }

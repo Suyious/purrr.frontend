@@ -22,7 +22,7 @@ export enum ServerEvents {
 }
 
 export interface ClientToServerEvents {
-    [ClientEvents.INIT_USER]: (data: { name: string }) => void;
+    [ClientEvents.INIT_USER]: (data: { name: string, publicKey: string }) => void;
     [ClientEvents.FIND_PARTNER]: () => void;
     [ClientEvents.SEND_MESSAGE]: (data: { message: string|null, image: string|null, reply: number | null }) => void;
     [ClientEvents.READ_MESSAGE]: (data: { messageId: number }) => void;
@@ -33,7 +33,7 @@ export interface ClientToServerEvents {
 
 export interface ServerToClientEvents {
     [ServerEvents.WAITING]: () => void;
-    [ServerEvents.MATCHED]: (data: { partnerName: string }) => void;
+    [ServerEvents.MATCHED]: (data: { partnerName: string, partnerPk: string }) => void;
     [ServerEvents.RECEIVE_MESSAGE]: (data: Message) => void;
     [ServerEvents.MARK_AS_READ]: (data: {messageId: number}) => void;
     [ServerEvents.SHOW_TYPING]: () => void;

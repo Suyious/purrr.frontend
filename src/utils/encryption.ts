@@ -1,11 +1,19 @@
 
-export interface EncryptedMessage {
-  ciphertext: ArrayBuffer;
-  iv: ArrayBuffer;
-}
-
 export const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
   return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+};
+
+export const arrayBufferToBase64ForImg = (buffer: ArrayBuffer): string => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 8192;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, Array.from(chunk));
+  }
+
+  return btoa(binary);
 };
 
 export const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
@@ -50,7 +58,8 @@ export const deriveSharedSecret = async (
 
 export const encryptMessage = async (
   message: string,
-  sharedSecret: CryptoKey
+  sharedSecret: CryptoKey,
+  isImage: Boolean = false
 ): Promise<string> => {
   const encoder = new TextEncoder();
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
@@ -65,7 +74,7 @@ export const encryptMessage = async (
   );
 
   const payload = {
-    ciphertext: arrayBufferToBase64(ciphertext),
+    ciphertext: isImage ? arrayBufferToBase64ForImg(ciphertext) : arrayBufferToBase64(ciphertext),
     iv: arrayBufferToBase64(iv)
   };
 

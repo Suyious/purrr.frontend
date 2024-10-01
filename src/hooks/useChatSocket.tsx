@@ -67,14 +67,12 @@ export const useChatSocket = () => {
 
             const partnerPk = await getKey(KeyTransaction.PARTNER_PK);
             const selfPk = await getKey(KeyTransaction.SELF_PK);
-            const sharedSecret = await deriveSharedSecret(selfPk!!, partnerPk!!);
-            const decryptedMsg = await decryptMessage(data.body!!, sharedSecret);
-            if (data.image) {
-                const decryptedImg = await decryptMessage(data.image, sharedSecret);
-                data.image = decryptedImg;
-            }
+            const sharedSecret = await deriveSharedSecret(selfPk!, partnerPk!);
+            const decryptedMsg = data.body ? await decryptMessage(data.body, sharedSecret) : null;
+            const decryptedImg = data.image? await decryptMessage(data.image, sharedSecret): null;
 
             data.body = decryptedMsg;
+            data.image = decryptedImg;
             setMessages(prevMessages => [...prevMessages, data]);
         });
 
@@ -124,15 +122,11 @@ export const useChatSocket = () => {
 
             const partnerPk = await getKey(KeyTransaction.PARTNER_PK);
             const selfPk = await getKey(KeyTransaction.SELF_PK);
-            const sharedSecret = await deriveSharedSecret(selfPk!!, partnerPk!!);
-            const encryptedMsg = await encryptMessage(message ?? '', sharedSecret);
-
-            if (image){
-                const encryptedImg = await encryptMessage(image, sharedSecret);
-                socket.emit(ClientEvents.SEND_MESSAGE, { message: encryptedMsg, image: encryptedImg, reply });
-            } else {
-                socket.emit(ClientEvents.SEND_MESSAGE, { message: encryptedMsg, image, reply });
-            }
+            const sharedSecret = await deriveSharedSecret(selfPk!, partnerPk!);
+            const encryptedMsg = message ? await encryptMessage(message, sharedSecret) : null;
+            const encryptedImg = image? await encryptMessage(image, sharedSecret, true): null;
+            
+            socket.emit(ClientEvents.SEND_MESSAGE, { message: encryptedMsg, image: encryptedImg, reply });
         }
     }, [socket, partner]);
 

@@ -59,7 +59,7 @@ export const deriveSharedSecret = async (
 export const encryptMessage = async (
   message: string,
   sharedSecret: CryptoKey,
-  isImage: Boolean = false
+  isImage: boolean = false
 ): Promise<string> => {
   const encoder = new TextEncoder();
   const iv = window.crypto.getRandomValues(new Uint8Array(12));

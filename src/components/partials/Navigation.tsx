@@ -8,7 +8,7 @@ export default function Navigation() {
                 <Link href="/">
                     <Image className="w-[5em] h-auto" src="/logo.png" width="200" height="200" alt="purrr logo"/>
                 </Link>
-                <ul className="hidden sm:flex gap-4 text-[0.9em]">
+                <ul className="hidden sm:flex text-white gap-4 text-[0.9em]">
                     <li><Link href="/how-it-works">How it Works</Link></li>
                     <li><Link href="/features">Features</Link></li>
                     <li><Link href="/feedback">Feedback</Link></li>

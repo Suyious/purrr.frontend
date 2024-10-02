@@ -12,6 +12,7 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        accent: "var(--accent)",
       },
       fontFamily: {
         "display": "var(--font-kalnia)",

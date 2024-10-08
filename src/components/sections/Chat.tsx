@@ -6,7 +6,7 @@ import ScrollDown from "@/assets/icons/scrollDown";
 import { Message } from "@/types/messages";
 import { setEmojiSize, truncate } from "@/utils";
 import Image from "next/image";
-import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, KeyboardEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import ChatInput from "../resusable/ChatInput";
 
 type ChatProps = {
@@ -27,9 +27,10 @@ export default function Chat({
     onReconnect, readMessage, startTyping, stopTyping }: ChatProps
 ) {
 
-    const message = useRef<HTMLInputElement>(null);
+    const message = useRef<HTMLTextAreaElement>(null);
     const fileinput = useRef<HTMLInputElement>(null);
     const chatBottom = useRef<HTMLDivElement>(null);
+    const chatInput = useRef<HTMLFormElement>(null)
     const timer = useRef<number>();
 
     const TYPINGTIMEOUT = 500;
@@ -38,6 +39,7 @@ export default function Chat({
     const [unread, setUnread] = useState<number>(0);
     const [typing, setTyping] = useState<boolean>(false);
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
+    const [chatHeightOffset, setChatHeightOffset] = useState<number>(5);
 
     const scrollToBottom = useCallback(() => {
         if (!document.hidden) {
@@ -108,10 +110,27 @@ export default function Chat({
     }, [markReadIfViewed])
 
     useEffect(() => {
-        if(isScrolledToBottom(115)) scrollToBottom();
-    }, [replyingTo, scrollToBottom])
+        const observer = new ResizeObserver(entries => {
+            setChatHeightOffset(entries[0].contentRect.height + 32)
+            scrollToBottom();
+        });
+        let ref = null;
+        if(chatInput.current) {
+            observer.observe(chatInput.current)
+            ref = chatInput.current;
+        }
 
-    const onMessageChange = () => {
+        return () => {
+            if(ref) observer.unobserve(ref)
+        }
+    }, [chatInput.current?.height, scrollToBottom])
+
+    const onMessageChange: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+        if(e.key === "Enter" && e.shiftKey === false) {
+            e.preventDefault();
+            submitMessage();
+            return;
+        }
         window.clearTimeout(timer.current);
         if (!typing) {
             startTyping();
@@ -123,9 +142,7 @@ export default function Chat({
         }, TYPINGTIMEOUT)
     }
 
-    function onSubmit(e: FormEvent) {
-        e.preventDefault();
-
+    function submitMessage() {
         let msg: string | null = null, img: string | null = null, reply: number | null = null;
 
         if (message.current) {
@@ -147,6 +164,11 @@ export default function Chat({
         if (msg || img) onMessage(msg, img, reply);
         stopTyping();
         setTyping(false);
+    }
+
+    function onSubmit(e: FormEvent) {
+        e.preventDefault();
+        submitMessage();
     }
 
     function onFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -186,7 +208,7 @@ export default function Chat({
         <section className={"w-full flex justify-center items-end relative font-text"}>
 
             <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full pt-[5em]" style={{
-                paddingBottom: replyingTo === null ? "5em": "9em"
+                paddingBottom: chatHeightOffset + "px",
             }}>
                 {messages.map((message, i) => (
                     (message.body || message.image) &&
@@ -214,7 +236,7 @@ export default function Chat({
                             </div>}
                         {message.body && message.body.trim() !== "" &&
                             <div className="flex items-center gap-4" style={{ flexDirection: message.from === "You" ? "row-reverse" : "row" }}>
-                                <h3 className="max-w-[20em] break-words" style={{ fontSize: setEmojiSize(message.body) }}>{message.body}</h3>
+                                <h3 className="max-w-[70vw] break-words whitespace-pre-line" style={{ fontSize: setEmojiSize(message.body) }}>{message.body}</h3>
                                 {!message.image && <div className="hidden group-hover:flex items-center gap-2">
                                     <button onClick={() => replyTo(i)}><ReplyIcon width="18" /></button>
                                     {/* <button><MenuIcon width="20" /></button> */}
@@ -248,7 +270,7 @@ export default function Chat({
 
             <ChatInput
                 replyingTo={replyingTo} onSubmit={onSubmit}
-                attachment={attachment} messages={messages}
+                attachment={attachment} messages={messages} chatInput={chatInput}
                 fileinput={fileinput} message={message}
                 onFileChange={onFileChange} onMessageChange={onMessageChange}
                 clearAttachment={clearAttachment} replyTo={replyTo}

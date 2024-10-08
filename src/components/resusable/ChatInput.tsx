@@ -4,26 +4,36 @@ import SmileyIcon from "@/assets/icons/smiley";
 import { Message } from "@/types/messages";
 import { truncate } from "@/utils";
 import Image from "next/image";
-import { ChangeEventHandler, FormEventHandler, RefObject } from "react"
+import { ChangeEventHandler, FormEventHandler, KeyboardEventHandler, RefObject } from "react"
 
 type ChatInputProps = {
     replyingTo: number | null;
     attachment: string;
     messages: Message[];
     fileinput: RefObject<HTMLInputElement>;
-    message: RefObject<HTMLInputElement>;
+    chatInput: RefObject<HTMLFormElement>;
+    message: RefObject<HTMLTextAreaElement>;
     onSubmit: FormEventHandler<HTMLFormElement>;
     onFileChange: ChangeEventHandler<HTMLInputElement>;
-    onMessageChange: ChangeEventHandler<HTMLInputElement>;
+    onMessageChange: KeyboardEventHandler<HTMLTextAreaElement>;
     clearAttachment(): void;
     replyTo(messageId: number | null): void;
 }
 
 export default function ChatInput({
-    onSubmit, replyingTo, attachment, clearAttachment, messages, replyTo, fileinput, message, onFileChange, onMessageChange
+    onSubmit, replyingTo, attachment, clearAttachment, chatInput,
+    messages, replyTo, fileinput, message, onFileChange, onMessageChange
 }: ChatInputProps) {
+
+    function adjustInputHeight(): void { 
+        if(message.current) {
+            message.current.style.height = "auto";
+            message.current.style.height = message.current.scrollHeight + "px";
+        }
+    }
+
     return (
-        <form onSubmit={onSubmit} className="fixed bottom-[1em] w-[1080px] max-w-[95vw] bg-background rounded-b-[50px]" style={{
+        <form ref={chatInput} onSubmit={onSubmit} className="fixed bottom-[1em] w-[1080px] max-w-[95vw] bg-background rounded-b-[50px]" style={{
             borderTopLeftRadius: replyingTo !== null ? "0" : "50px",
             borderTopRightRadius: replyingTo !== null ? "0" : "50px",
         }}>
@@ -49,7 +59,7 @@ export default function ChatInput({
                     <input accept="image/*" onChange={onFileChange} ref={fileinput} type="file" className="hidden" />
                     <AttachmentIcon width="20" />
                 </button>
-                <input ref={message} onChange={onMessageChange} autoFocus className="bg-inherit flex-1 outline-none text-base" type="text" placeholder="Send a message" />
+                <textarea rows={1} maxLength={5000} ref={message} onKeyDown={onMessageChange} onKeyUp={adjustInputHeight} autoFocus className="bg-inherit flex-1 outline-none text-base resize-none max-h-[10em]" placeholder="Send a message" />
                 <button className="text-sm px-4 rounded-md" type="submit">Send</button>
             </div>
         </form>

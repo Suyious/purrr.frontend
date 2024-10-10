@@ -38,6 +38,7 @@ export default function ChatInput({
 
     function handleShowEmoji() {
         setShowEmoji(!showEmoji);
+        message.current?.focus();
     }
 
     function onEmojiChoose(emoji: string) {

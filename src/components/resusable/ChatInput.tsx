@@ -4,7 +4,8 @@ import SmileyIcon from "@/assets/icons/smiley";
 import { Message } from "@/types/messages";
 import { truncate } from "@/utils";
 import Image from "next/image";
-import { ChangeEventHandler, FormEventHandler, KeyboardEventHandler, RefObject } from "react"
+import { ChangeEventHandler, FormEvent, FormEventHandler, KeyboardEventHandler, RefObject, useRef, useState } from "react";
+import EmojiPicker from "../layout/EmojiPicker";
 
 type ChatInputProps = {
     replyingTo: number | null;
@@ -32,8 +33,29 @@ export default function ChatInput({
         }
     }
 
+    const emojiRef = useRef<HTMLDivElement>(null);
+    const [showEmoji, setShowEmoji] = useState<boolean>(false);
+
+    function handleShowEmoji() {
+        setShowEmoji(!showEmoji);
+    }
+
+    function onEmojiChoose(emoji: string) {
+        if(message.current) message.current.value += emoji; 
+    }
+
+    function onSubmitWithSideEffect(e: FormEvent<HTMLFormElement>) {
+        setShowEmoji(false);
+        onSubmit(e);
+    }
+
+    function onAttachmentWithSideEffect() {
+        setShowEmoji(false);
+        fileinput.current?.click();
+    }
+
     return (
-        <form ref={chatInput} onSubmit={onSubmit} className="fixed bottom-[1em] w-[1080px] max-w-[95vw] bg-background rounded-b-[50px]" style={{
+        <form ref={chatInput} onSubmit={onSubmitWithSideEffect} className="fixed bottom-[1em] w-[1080px] max-w-[95vw] bg-background rounded-b-[50px]" style={{
             borderTopLeftRadius: replyingTo !== null ? "0" : "50px",
             borderTopRightRadius: replyingTo !== null ? "0" : "50px",
         }}>
@@ -43,6 +65,12 @@ export default function ChatInput({
                 </button>
                 <Image src={decodeURIComponent(attachment)} alt="Image" width="0" height="0" sizes="100vw" className="w-[5em] h-[5em] rounded-lg object-cover" />
             </div>}
+
+            { showEmoji && <div ref={emojiRef} tabIndex={0}
+                className="absolute bottom-[4em] h-[30em] max-h-[90vw] w-[20em] max-w-[90vw]">
+                <EmojiPicker onChoose={onEmojiChoose}/>
+            </div> }
+
             {replyingTo !== null &&
                 <div className="w-full h-16 border-foreground border-t-2 px-2">
                     <button type="button" onClick={() => replyTo(null)} className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute -top-2 -right-2">
@@ -52,10 +80,10 @@ export default function ChatInput({
                     <h3>{messages[replyingTo].image && "(Attachment)"} {truncate(messages[replyingTo].body)}</h3>
                 </div>}
             <div className="flex items-center bg-background rounded-[50px] border-[1px] border-foreground p-2">
-                <button type="button" className="mr-2 w-[30px] h-[30px] flex justify-center items-center rounded-md">
-                    <SmileyIcon />
+                <button onClick={handleShowEmoji} type="button" className="mr-2 w-[30px] h-[30px] flex justify-center items-center rounded-md">
+                    <SmileyIcon/>
                 </button>
-                <button onClick={() => fileinput.current?.click()} type="button" className="mr-2 w-[25px] h-[25px] flex justify-center items-center rounded-md">
+                <button onClick={onAttachmentWithSideEffect} type="button" className="mr-2 w-[25px] h-[25px] flex justify-center items-center rounded-md">
                     <input accept="image/*" onChange={onFileChange} ref={fileinput} type="file" className="hidden" />
                     <AttachmentIcon width="20" />
                 </button>

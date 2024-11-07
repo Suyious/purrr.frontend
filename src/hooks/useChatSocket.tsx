@@ -25,6 +25,7 @@ export const useChatSocket = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [readIndex, setReadIndex] = useState<number | null>(null);
     const [partnerTyping, setPartnerTyping] = useState(false);
+    const [incomingCall, setIncomingCall] = useState(false);
 
     useEffect(() => {
         const newSocket = io(SOCKET_SERVER_URL) as Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -69,7 +70,7 @@ export const useChatSocket = () => {
             const selfPk = await getKey(KeyTransaction.SELF_PK);
             const sharedSecret = await deriveSharedSecret(selfPk!, partnerPk!);
             const decryptedMsg = data.body ? await decryptMessage(data.body, sharedSecret) : null;
-            const decryptedImg = data.image? await decryptMessage(data.image, sharedSecret): null;
+            const decryptedImg = data.image ? await decryptMessage(data.image, sharedSecret) : null;
 
             data.body = decryptedMsg;
             data.image = decryptedImg;
@@ -86,6 +87,10 @@ export const useChatSocket = () => {
 
         newSocket.on(ServerEvents.HIDE_TYPING, () => {
             setPartnerTyping(false);
+        });
+
+        newSocket.on(ServerEvents.INCOMING_CALL, () => {
+            setIncomingCall(true);
         });
 
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, async () => {
@@ -124,8 +129,8 @@ export const useChatSocket = () => {
             const selfPk = await getKey(KeyTransaction.SELF_PK);
             const sharedSecret = await deriveSharedSecret(selfPk!, partnerPk!);
             const encryptedMsg = message ? await encryptMessage(message, sharedSecret) : null;
-            const encryptedImg = image? await encryptMessage(image, sharedSecret, true): null;
-            
+            const encryptedImg = image ? await encryptMessage(image, sharedSecret, true) : null;
+
             socket.emit(ClientEvents.SEND_MESSAGE, { message: encryptedMsg, image: encryptedImg, reply });
         }
     }, [socket, partner]);
@@ -148,6 +153,13 @@ export const useChatSocket = () => {
         }
     }, [socket, partner]);
 
+    const requestVideoCall = useCallback(() => {
+        console.log(socket, partner)
+        if (socket && partner) {
+            socket.emit(ClientEvents.REQUEST_VIDEO_CALL);
+        }
+    }, [socket, partner]);
+
     const disconnect = useCallback(() => {
         socket?.emit(ClientEvents.DISCONNECT_PARTNER);
     }, [socket]);
@@ -166,6 +178,8 @@ export const useChatSocket = () => {
         readMessage,
         startTyping,
         stopTyping,
+        requestVideoCall,
+        incomingCall,
         disconnect,
     }
 }

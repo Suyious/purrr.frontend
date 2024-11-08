@@ -25,7 +25,6 @@ export const useChatSocket = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [readIndex, setReadIndex] = useState<number | null>(null);
     const [partnerTyping, setPartnerTyping] = useState(false);
-    const [incomingCall, setIncomingCall] = useState(false);
 
     useEffect(() => {
         const newSocket = io(SOCKET_SERVER_URL) as Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -89,10 +88,6 @@ export const useChatSocket = () => {
             setPartnerTyping(false);
         });
 
-        newSocket.on(ServerEvents.INCOMING_CALL, () => {
-            setIncomingCall(true);
-        });
-
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, async () => {
             setPartner(null);
             await storeKey(KeyTransaction.PARTNER_PK, null);
@@ -153,18 +148,12 @@ export const useChatSocket = () => {
         }
     }, [socket, partner]);
 
-    const requestVideoCall = useCallback(() => {
-        console.log(socket, partner)
-        if (socket && partner) {
-            socket.emit(ClientEvents.REQUEST_VIDEO_CALL);
-        }
-    }, [socket, partner]);
-
     const disconnect = useCallback(() => {
         socket?.emit(ClientEvents.DISCONNECT_PARTNER);
     }, [socket]);
 
     return {
+        socket,
         user,
         partner,
         messages,
@@ -178,8 +167,6 @@ export const useChatSocket = () => {
         readMessage,
         startTyping,
         stopTyping,
-        requestVideoCall,
-        incomingCall,
         disconnect,
     }
 }

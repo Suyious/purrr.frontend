@@ -4,11 +4,14 @@ import Greeting from "@/components/sections/Greeting";
 import NotConnected from "@/components/sections/NotConnected";
 import StartChatting from "@/components/sections/StartChatting";
 import WaitingForChat from "@/components/sections/WaitingForChat";
+import { VideoChat } from "@/components/resusable/VideoChat";
 import { useChatSocket } from "@/hooks/useChatSocket";
+import { useWebRTC } from "@/hooks/useWebRTC";
 
 export default function ChatPage() {
 
     const {
+        socket,
         user,
         partner,
         messages,
@@ -22,10 +25,17 @@ export default function ChatPage() {
         startTyping,
         stopTyping,
         partnerTyping,
-        requestVideoCall,
-        incomingCall,
         disconnect,
     } = useChatSocket();
+
+    const {
+        requestVideoCall,
+        incomingCall,
+        declineIncomingCall,
+        webRTCState,
+        startVideoCall,
+        // endVideoCall
+    } = useWebRTC(socket, partner);
 
     let content;
 
@@ -42,7 +52,8 @@ export default function ChatPage() {
                     content = <Chat partner={partner}
                         onMessage={sendMessage} messages={messages}
                         onVideoCall={requestVideoCall} incomingCall={incomingCall}
-                        onStop={disconnect}
+                        declineIncomingCall={declineIncomingCall}
+                        startVideoCall={startVideoCall} onStop={disconnect}
                         onReconnect={findPartner} readIndex={readIndex}
                         readMessage={readMessage} startTyping={startTyping}
                         stopTyping={stopTyping} partnerTyping={partnerTyping} />;
@@ -56,6 +67,7 @@ export default function ChatPage() {
     return (
         <main className="w-full h-full font-display">
             {content}
+            {webRTCState.connected && <VideoChat webRTCState={webRTCState} />}
         </main>
     );
 }

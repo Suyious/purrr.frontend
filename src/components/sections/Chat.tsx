@@ -14,7 +14,9 @@ type ChatProps = {
     partnerTyping: boolean,
     onMessage: (message: string | null, image: string | null, reply: number | null) => void,
     onVideoCall: () => void,
+    startVideoCall: () => void,
     incomingCall: boolean,
+    declineIncomingCall: () => void,
     onStop: () => void,
     onReconnect: () => void,
     readMessage: (messageId: number) => void,
@@ -23,7 +25,7 @@ type ChatProps = {
 }
 
 export default function Chat({
-    partner, messages, readIndex, partnerTyping, onMessage, onVideoCall, incomingCall,
+    partner, messages, readIndex, partnerTyping, onMessage, onVideoCall, incomingCall, startVideoCall, declineIncomingCall,
     onStop, onReconnect, readMessage, startTyping, stopTyping }: ChatProps
 ) {
 
@@ -222,8 +224,8 @@ export default function Chat({
                     </div>
                     {incomingCall && <div className="flex gap-2 ml-auto">
                         Incoming Video Call
-                        <button className="p-2 rounded-full bg-green-500">Yes</button>
-                        <button className="p-2 rounded-full bg-red-500">No</button>
+                        <button className="p-2 rounded-full bg-green-500" onClick={startVideoCall}>Yes</button>
+                        <button className="p-2 rounded-full bg-red-500" onClick={declineIncomingCall}>No</button>
                     </div>}
                     <div className="flex gap-2 ml-auto mr-8">
                         <button onClick={onVideoCall} disabled={incomingCall}><AttachmentIcon /></button>

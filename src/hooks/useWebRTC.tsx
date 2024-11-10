@@ -20,9 +20,11 @@ export const useWebRTC = (socket: Socket<ServerToClientEvents, ClientToServerEve
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
     const [incomingCall, setIncomingCall] = useState(false);
+    const [ongoingCall, setOngoingCall] = useState(false);
 
     const setupLocalStream = useCallback(async () => {
         try {
+            console.log("Accessing Local Streams")
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: true,
                 audio: true,
@@ -41,6 +43,8 @@ export const useWebRTC = (socket: Socket<ServerToClientEvents, ClientToServerEve
     }, [peerConnectionRef]);
 
     const setupPeerConnection = useCallback(() => {
+        console.log("Setting up WebRTC Peer Connection");
+
         const iceServers = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -76,17 +80,54 @@ export const useWebRTC = (socket: Socket<ServerToClientEvents, ClientToServerEve
         return peerConnection;
     }, [socket]);
 
+    const endVideoCall = useCallback((localEvent: boolean) => {
+        console.log("Closing Video Call: localEvent =", localEvent);
+        setIncomingCall(false);
+        setOngoingCall(false);
+        console.log("Stopping localtracks", webRTCState.localStream);
+        webRTCState.localStream?.getTracks().forEach(track => track.stop());
+
+        setWebRTCState({
+            localStream: null,
+            remoteStream: null,
+            peerConnection: null,
+            connected: false,
+        });
+
+        if (socket && localEvent) {
+            console.log("Emitted End Video Call to Partner");
+            socket.emit(ClientEvents.END_VIDEO_CALL);
+        }
+    }, [webRTCState, socket]);
+
     useEffect(() => {
         if (!socket) return;
 
         const peerConnection = setupPeerConnection();
 
         socket.on(ServerEvents.INCOMING_CALL, () => {
+            console.log("Incoming Call!");
             setIncomingCall(true);
+        });
+
+        socket.on(ServerEvents.CALL_DECLINED, ({ reason }) => {
+            switch (reason) {
+                case 'reject':
+                    setIncomingCall(false);
+                    console.log("Somehow Tell the user that whom you called declined your call!");
+                    break;
+                case 'hangup':
+                    setOngoingCall(false);
+                    endVideoCall(false);
+                    console.log("Oh No! They hanged up the call!");
+                    break;
+            }
         });
 
         socket.on(ServerEvents.SET_OFFER, async (offer) => {
             try {
+                console.log("Setting Offer..., Sending Answer..., Starting Ongoing Call...");
+                setOngoingCall(true);
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
                 await setupLocalStream();
                 const answer = await peerConnection.createAnswer();
@@ -99,6 +140,7 @@ export const useWebRTC = (socket: Socket<ServerToClientEvents, ClientToServerEve
 
         socket.on(ServerEvents.SET_ANSWER, async (answer) => {
             try {
+                console.log("Setting Answer...");
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
             } catch (error) {
                 console.error('Error handling answer:', error);
@@ -107,6 +149,7 @@ export const useWebRTC = (socket: Socket<ServerToClientEvents, ClientToServerEve
 
         socket.on(ServerEvents.SET_CANDIDATE, async (candidate) => {
             try {
+                console.log("Adding ICE Candidate...");
                 await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
             } catch (error) {
                 console.error('Error handling ice candidate:', error);
@@ -114,27 +157,31 @@ export const useWebRTC = (socket: Socket<ServerToClientEvents, ClientToServerEve
         });
 
         return () => {
+            console.log("Cleanup... closing connection peer");
             peerConnection.close();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setupLocalStream, setupPeerConnection, socket]);
 
     const requestVideoCall = useCallback(() => {
         if (socket && partner) {
+            console.log("Requesting Video Call to Partner");
             socket.emit(ClientEvents.REQUEST_VIDEO_CALL);
         }
     }, [socket, partner]);
 
     const declineIncomingCall = useCallback(() => {
         if (socket && partner) {
-            if (incomingCall) {
-                socket.emit(ClientEvents.DECLINE_INCOMING_CALL);
-                setIncomingCall(false);
-            }
+            console.log("Declined Incoming Call");
+            socket.emit(ClientEvents.DECLINE_INCOMING_CALL);
+            setIncomingCall(false);
         }
-    }, [socket, partner, incomingCall]);
+    }, [socket, partner]);
 
     const startVideoCall = useCallback(async () => {
+        console.log("Accepted Incoming Call... Starting Video Call");
         setIncomingCall(false);
+        setOngoingCall(true);
         try {
             if (peerConnectionRef.current && socket) {
                 await setupLocalStream();
@@ -149,23 +196,10 @@ export const useWebRTC = (socket: Socket<ServerToClientEvents, ClientToServerEve
         }
     }, [setupLocalStream, socket]);
 
-    const endVideoCall = useCallback(() => {
-        webRTCState.localStream?.getTracks().forEach(track => track.stop());
-        peerConnectionRef.current?.close();
-
-        setWebRTCState({
-            localStream: null,
-            remoteStream: null,
-            peerConnection: null,
-            connected: false,
-        });
-
-        setupPeerConnection();
-    }, [setupPeerConnection, webRTCState]);
-
     return {
         requestVideoCall,
         incomingCall,
+        ongoingCall,
         declineIncomingCall,
         webRTCState,
         startVideoCall,

@@ -10,6 +10,7 @@ export enum ClientEvents {
 
     REQUEST_VIDEO_CALL = 'request_video_call',
     DECLINE_INCOMING_CALL = 'decline_incoming_call',
+    END_VIDEO_CALL = 'end_video_call',
     SEND_OFFER = 'send_offer',
     SEND_ANSWER = 'send_answer',
     SEND_CANDIDATE = 'send_candidate',
@@ -26,6 +27,7 @@ export enum ServerEvents {
     HIDE_TYPING = 'hide_typing',
 
     INCOMING_CALL = 'incoming_call',
+    CALL_DECLINED = 'call_declined',
     SET_OFFER = 'set_offer',
     SET_ANSWER = 'set_answer',
     SET_CANDIDATE = 'set_candidate',
@@ -44,6 +46,7 @@ export interface ClientToServerEvents {
 
     [ClientEvents.REQUEST_VIDEO_CALL]: () => void;
     [ClientEvents.DECLINE_INCOMING_CALL]: () => void;
+    [ClientEvents.END_VIDEO_CALL]: () => void;
     [ClientEvents.SEND_OFFER]: (data: RTCSessionDescriptionInit) => void;
     [ClientEvents.SEND_ANSWER]: (data: RTCSessionDescriptionInit) => void;
     [ClientEvents.SEND_CANDIDATE]: (data: RTCIceCandidateInit) => void;
@@ -60,6 +63,7 @@ export interface ServerToClientEvents {
     [ServerEvents.HIDE_TYPING]: () => void;
 
     [ServerEvents.INCOMING_CALL]: () => void;
+    [ServerEvents.CALL_DECLINED]: (data: { reason: 'hangup' | 'reject' }) => void;
     [ServerEvents.SET_OFFER]: (data: RTCSessionDescriptionInit) => void;
     [ServerEvents.SET_ANSWER]: (data: RTCSessionDescriptionInit) => void;
     [ServerEvents.SET_CANDIDATE]: (data: RTCIceCandidateInit) => void;

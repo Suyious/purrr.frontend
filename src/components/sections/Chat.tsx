@@ -5,7 +5,7 @@ import { Message } from "@/types/messages";
 import { ChangeEvent, FormEvent, KeyboardEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import ChatInput from "../resusable/ChatInput";
 import { ChatDisplay } from "../resusable/ChatDisplay";
-import AttachmentIcon from "@/assets/icons/attachment";
+import CallIcon from "@/assets/icons/call";
 
 type ChatProps = {
     partner: string,
@@ -16,6 +16,7 @@ type ChatProps = {
     onVideoCall: () => void,
     startVideoCall: () => void,
     incomingCall: boolean,
+    ongoingCall: boolean,
     declineIncomingCall: () => void,
     onStop: () => void,
     onReconnect: () => void,
@@ -25,7 +26,7 @@ type ChatProps = {
 }
 
 export default function Chat({
-    partner, messages, readIndex, partnerTyping, onMessage, onVideoCall, incomingCall, startVideoCall, declineIncomingCall,
+    partner, messages, readIndex, partnerTyping, onMessage, onVideoCall, incomingCall, ongoingCall, startVideoCall, declineIncomingCall,
     onStop, onReconnect, readMessage, startTyping, stopTyping }: ChatProps
 ) {
 
@@ -227,8 +228,14 @@ export default function Chat({
                         <button className="p-2 rounded-full bg-green-500" onClick={startVideoCall}>Yes</button>
                         <button className="p-2 rounded-full bg-red-500" onClick={declineIncomingCall}>No</button>
                     </div>}
+                    {ongoingCall && <div className="flex gap-2 ml-auto">
+                        In a Video Call 00:00 (insert dynamic counter here)
+                    </div>}
                     <div className="flex gap-2 ml-auto mr-8">
-                        <button onClick={onVideoCall} disabled={incomingCall}><AttachmentIcon /></button>
+                        {!(incomingCall || ongoingCall) && <button onClick={onVideoCall}>
+                            <CallIcon />
+                        </button>
+                        }
                     </div>
                     <div className="flex gap-2">
                         <button onClick={onRefresh}><RefreshIcon /></button>

@@ -1,6 +1,11 @@
 import ExitIcon from "@/assets/icons/exit";
 import RefreshIcon from "@/assets/icons/refresh";
+import VideoIcon from "@/assets/icons/video";
+import AudioIcon from "@/assets/icons/audio";
 import ScrollDown from "@/assets/icons/scrollDown";
+import MenuIcon from "@/assets/icons/menu";
+import ChatIcon from "@/assets/icons/chat";
+import PhoneIcon from "@/assets/icons/phone";
 import { Message } from "@/types/messages";
 import { ChangeEvent, FormEvent, KeyboardEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import ChatInput from "../resusable/ChatInput";
@@ -36,7 +41,8 @@ export default function Chat({
     const [unread, setUnread] = useState<number>(0);
     const [typing, setTyping] = useState<boolean>(false);
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
-    const [chatHeightOffset, setChatHeightOffset] = useState<number>(5);
+    const [chatHeightOffset, setChatHeightOffset] = useState<number>(80);
+    const [showVideoSplit, setShowVideoSplit] = useState<boolean>(false);
 
     const scrollToBottom = useCallback(() => {
         if (!document.hidden) {
@@ -202,36 +208,91 @@ export default function Chat({
     }
 
     return (
-        <section className={"w-full flex justify-center items-end relative font-text"}>
+        <div className="flex w-full h-full justify-between">
 
-            <ChatDisplay chatBottom={chatBottom} chatHeightOffset={chatHeightOffset} messages={messages} partner={partner} readIndex={readIndex} replyTo={replyTo}/>
-
-            {unread > 0 && <button onClick={scrollToBottom} className="fixed bottom-[5em]">
-                <div className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute right-0">{unread}</div>
-                <ScrollDown />
-            </button>}
-
-            <header className="fixed top-0 left-0 w-full bg-background font-display">
-                <div className="w-[1080px] max-w-full p-4 m-auto flex justify-between items-end">
+            <header className="fixed z-[99] bg-background top-0 left-0 w-full">
+                <div className="w-[1080px] h-[4em] max-w-full m-auto px-4 flex justify-between items-center">
                     <div className="">
-                        <h4 className="text-[0.8em]">You&apos;re connected to</h4>
+                        <h4 className="text-[0.8em] font-text leading-3">You&apos;re connected to</h4>
                         <h2>{partner} {partnerTyping && <small className="font-text">Typing...</small>}</h2>
                     </div>
                     <div className="flex gap-2">
+                        <button onClick={() => setShowVideoSplit(p => !p)}><VideoIcon /></button>
                         <button onClick={onRefresh}><RefreshIcon /></button>
                         <button onClick={onStop}><ExitIcon /></button>
                     </div>
                 </div>
             </header>
 
-            <ChatInput
-                replyingTo={replyingTo} onSubmit={onSubmit}
-                attachment={attachment} messages={messages} chatInput={chatInput}
-                fileinput={fileinput} message={message}
-                onFileChange={onFileChange} onMessageChange={onMessageChange}
-                clearAttachment={clearAttachment} replyTo={replyTo}
-            />
+            { showVideoSplit && <section className="flex-[2] h-full relative">
+                <div className="w-[80%] h-[30em] mt-[6em] m-auto relative">
+                    <video id='local-video' className='rounded-lg w-full h-full' muted loop autoPlay playsInline
+                        style={{ objectFit: "cover" }}
+                        src='https://videos.pexels.com/video-files/20594036/20594036-hd_1920_1080_25fps.mp4'
+                    ></video>
 
-        </section>
+                    <div className="absolute -bottom-5 -right-5 w-[20vw] h-[20vh] rounded-lg overflow-hidden">
+                        <video id='local-video' className='w-full h-full object-cover' muted loop autoPlay playsInline
+                            src='https://videos.pexels.com/video-files/20530134/20530134-hd_1920_1080_25fps.mp4'
+                        ></video>
+                    </div>
+                </div>
+
+                <div className="absolute bottom-[1em] w-full left-1/2 px-4 -translate-x-1/2">
+                    <div className="bg-slate-500/60 w-[80%] m-auto h-[5em] rounded-3xl flex justify-between items-center px-4">
+                        <div className="">
+                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
+                                <MenuIcon width="30"/>
+                            </button>
+                        </div>
+                        <div className="flex gap-4">
+                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
+                                <VideoIcon width="30"/>
+                            </button>
+                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-red-500 rounded-[50px]">
+                                <PhoneIcon width="30"/>
+                            </button>
+                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
+                                <AudioIcon width="30"/>
+                            </button>
+                        </div>
+                        <div className="">
+                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
+                                <ChatIcon width="30"/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </section>}
+
+            <section className={`flex-[1] relative w-full font-text  ${showVideoSplit ? "hidden lg:block": "block"}`}>
+
+                <div className="h-[100vh] w-full overflow-y-scroll">
+                    <div className="w-full max-w-[1080px] m-auto">
+                        <ChatDisplay chatBottom={chatBottom} chatHeightOffset={chatHeightOffset} messages={messages} partner={partner} readIndex={readIndex} replyTo={replyTo}/>
+                    </div>
+                </div>
+
+                {unread > 0 && <button onClick={scrollToBottom} className="absolute bottom-[5em] left-1/2 -translate-x-1/2">
+                    <div className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute right-0">{unread}</div>
+                    <ScrollDown />
+                </button>}
+
+
+                <div className="absolute bottom-[1em] w-full left-1/2 px-4 -translate-x-1/2">
+                    <div className="w-full max-w-[1080px] m-auto">
+                        <ChatInput
+                            replyingTo={replyingTo} onSubmit={onSubmit}
+                            attachment={attachment} messages={messages} chatInput={chatInput}
+                            fileinput={fileinput} message={message}
+                            onFileChange={onFileChange} onMessageChange={onMessageChange}
+                            clearAttachment={clearAttachment} replyTo={replyTo}
+                        />
+                    </div>
+                </div>
+
+            </section>
+        </div>
     )
 }

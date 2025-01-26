@@ -15,7 +15,7 @@ type ChatDisplayProps = {
 
 export function ChatDisplay({chatHeightOffset, messages, replyTo, partner, readIndex, chatBottom}: ChatDisplayProps) {
     return (
-        <div className="flex flex-col justify-end w-[1080px] max-w-full min-h-full pt-[5em]" style={{
+        <div className="flex flex-col justify-end max-w-full min-h-full pt-[5em]" style={{
             paddingBottom: chatHeightOffset + "px",
         }}>
             {messages.map((message, i) => (

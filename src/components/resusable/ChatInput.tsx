@@ -56,7 +56,7 @@ export default function ChatInput({
     }
 
     return (
-        <form ref={chatInput} onSubmit={onSubmitWithSideEffect} className="fixed bottom-[1em] w-[1080px] max-w-[95vw] bg-background rounded-b-[50px]" style={{
+        <form ref={chatInput} onSubmit={onSubmitWithSideEffect} className=" w-full bg-background rounded-b-[50px]" style={{
             borderTopLeftRadius: replyingTo !== null ? "0" : "50px",
             borderTopRightRadius: replyingTo !== null ? "0" : "50px",
         }}>

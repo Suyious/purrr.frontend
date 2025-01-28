@@ -30,12 +30,14 @@ type ChatProps = {
     startVideoCall: (callback: () => void) => void,
     refuseIncomingVideoCall: () => void, 
     acceptIncomingVideoCall: () => void,
+    hangOngoingVideoCal: () => void,
 }
 
 export default function Chat({ 
     partner, messages, readIndex, partnerTyping, videoIncoming, videoShow, onMessage, onStop,
-    onReconnect, readMessage, startTyping, stopTyping, startVideoCall, refuseIncomingVideoCall, acceptIncomingVideoCall,
-    localStream, remoteStream, connected}: ChatProps
+    onReconnect, readMessage, startTyping, stopTyping,
+    startVideoCall, refuseIncomingVideoCall, acceptIncomingVideoCall,
+    localStream, remoteStream, connected, hangOngoingVideoCal }: ChatProps
 ) {
 
     const message = useRef<HTMLTextAreaElement>(null);
@@ -285,7 +287,7 @@ export default function Chat({
                             <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
                                 <VideoIcon width="30"/>
                             </button>
-                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-red-500 rounded-[50px]">
+                            <button onClick={hangOngoingVideoCal} className="w-[4em] h-[4em] flex justify-center items-center bg-red-500 rounded-[50px]">
                                 <PhoneIcon width="30"/>
                             </button>
                             <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">

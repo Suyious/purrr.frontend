@@ -10,6 +10,7 @@ export enum ClientEvents {
     START_VIDEO_CALL = 'start_video_call',
     ACCEPT_VIDEO_CALL = "accept_video_call",
     REFUSE_VIDEO_CALL = 'refuse_video_call',
+    HANG_VIDEO_CALL = "hang_video_call",
     DISCONNECT_PARTNER = 'disconnect_partner',
 }
 
@@ -23,6 +24,7 @@ export enum ServerEvents {
     RECIEVE_VIDEO_CALL = "recieve_video_call",
     ACCEPTED_VIDEO_CALL = "accepted_video_call",
     REFUSED_VIDEO_CALL = "refused_video_calL",
+    HANGED_VIDEO_CALL = "hanged_video_call",
     PARTNER_DISCONNECTED = 'partner_disconnected',
     ERROR = 'error'
 }
@@ -37,6 +39,7 @@ export interface ClientToServerEvents {
     [ClientEvents.START_VIDEO_CALL]: (data: { offer: string }) => void;
     [ClientEvents.ACCEPT_VIDEO_CALL]: (data: { answer: string }) => void;
     [ClientEvents.REFUSE_VIDEO_CALL]: () => void;
+    [ClientEvents.HANG_VIDEO_CALL]: () => void;
     [ClientEvents.DISCONNECT_PARTNER]: () => void;
 }
 
@@ -50,6 +53,7 @@ export interface ServerToClientEvents {
     [ServerEvents.RECIEVE_VIDEO_CALL]: (data: { offer: string }) => void;
     [ServerEvents.ACCEPTED_VIDEO_CALL]: (data: { answer: string }) => void;
     [ServerEvents.REFUSED_VIDEO_CALL]: () => void;
+    [ServerEvents.HANGED_VIDEO_CALL]: () => void;
     [ServerEvents.PARTNER_DISCONNECTED]: () => void;
     [ServerEvents.ERROR]: (data: { message: string }) => void;
 }

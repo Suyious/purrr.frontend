@@ -25,6 +25,7 @@ export default function ChatPage() {
     startVideoCall,
     refuseIncomingVideoCall,
     acceptIncomingVideoCall,
+    hangOngoingVideoCall,
     videoIncoming,
     videoShow,
     localStream,
@@ -53,7 +54,8 @@ export default function ChatPage() {
                           startVideoCall={startVideoCall} videoIncoming={videoIncoming}
                           refuseIncomingVideoCall={refuseIncomingVideoCall} videoShow={videoShow}
                           acceptIncomingVideoCall={acceptIncomingVideoCall}
-                          localStream={localStream} remoteStream={remoteStream} connected={connected}/>;
+                          localStream={localStream} remoteStream={remoteStream} connected={connected}
+                          hangOngoingVideoCal={hangOngoingVideoCall}/>;
         }
       } else { // if user is waiting for a partner
         content = <WaitingForChat />;

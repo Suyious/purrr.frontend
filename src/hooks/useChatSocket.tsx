@@ -27,7 +27,8 @@ export const useChatSocket = () => {
     const [readIndex, setReadIndex] = useState<number | null>(null);
     const [partnerTyping, setPartnerTyping] = useState(false);
 
-    const { localStream, remoteStream, connected, createOffer, createAnswer, addAnswer } = useVideoWebRTC();
+    const { localStream, remoteStream, connected, createOffer,
+         createAnswer, addAnswer, disconnect: disconnectVideo } = useVideoWebRTC();
 
     const [offer, setOffer] = useState<string>("");
     const [answer, setAnswer] = useState<string>("");
@@ -108,6 +109,13 @@ export const useChatSocket = () => {
 
         newSocket.on(ServerEvents.ACCEPTED_VIDEO_CALL, ({ answer: value }) => {
             setAnswer(value);
+        })
+
+        newSocket.on(ServerEvents.HANGED_VIDEO_CALL, () => {
+            setOffer("");
+            setAnswer("");
+            setVideoIncoming(false);
+            setVideoShow(false);
         })
 
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, async () => {
@@ -197,7 +205,7 @@ export const useChatSocket = () => {
             }
         });
     }, [createAnswer, offer, partner, socket])
-    
+       
     useEffect(() => {
         if(answer.length > 0) {
             addAnswer(JSON.parse(answer));
@@ -205,6 +213,17 @@ export const useChatSocket = () => {
             setVideoShow(true);
         }
     }, [addAnswer, answer]);
+
+    const hangOngoingVideoCall = useCallback(() => {
+        disconnectVideo();
+        setOffer("");
+        setAnswer("");
+        setVideoIncoming(false);
+        setVideoShow(false);
+        if(socket && partner) {
+            socket.emit(ClientEvents.HANG_VIDEO_CALL);
+        }
+    }, [socket, partner, disconnectVideo])
 
     const disconnect = useCallback(() => {
         socket?.emit(ClientEvents.DISCONNECT_PARTNER);
@@ -232,6 +251,7 @@ export const useChatSocket = () => {
         startVideoCall,
         refuseIncomingVideoCall,
         acceptIncomingVideoCall,
+        hangOngoingVideoCall,
         disconnect,
     }
 }

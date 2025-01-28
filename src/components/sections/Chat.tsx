@@ -233,45 +233,45 @@ export default function Chat({
     }, [remoteStream, connected, videoShow])
 
     function onVideoCallStart() {
-        startVideoCall(() => {
-            if (localVideoFeed.current) {
-                localVideoFeed.current.srcObject = localStream;
-            }
-        });
+        if(!connected) {
+            startVideoCall(() => {
+                if (localVideoFeed.current) {
+                    localVideoFeed.current.srcObject = localStream;
+                }
+            });
+        }
     }
 
     return (
         <div className="flex w-full h-full justify-between">
 
             <header className="fixed z-[99] bg-background top-0 left-0 w-full">
-                <div className="w-[1080px] h-[4em] max-w-full m-auto px-4 flex justify-between items-center">
+                <div className="relative w-[1080px] h-[4em] max-w-full m-auto px-4 flex justify-between items-center">
                     <div className="">
                         <h4 className="text-[0.8em] font-text leading-3">You&apos;re connected to</h4>
                         <h2>{partner} {partnerTyping && <small className="font-text">Typing...</small>}</h2>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={onVideoCallStart}><VideoIcon /></button>
+                        <button className="relative" onClick={onVideoCallStart}><VideoIcon /> { connected && <div className="w-2 h-2 absolute -top-1 -right-1 bg-green-400 rounded-full"></div>}</button>
                         <button onClick={onRefresh}><RefreshIcon /></button>
                         <button onClick={onStop}><ExitIcon /></button>
                     </div>
+                    { videoIncoming && <div className="absolute bg-background -bottom-3/4 right-5 rounded-lg border-2 border-white p-2 font-text flex gap-2">
+                        <div className="">Video Incoming</div>
+                        <button onClick={acceptIncomingVideoCall} className="text-sm bg-green-600 px-2 rounded-lg">Accept</button>
+                        <button onClick={refuseIncomingVideoCall} className="text-sm bg-red-400 px-2 rounded-lg">Refuse</button>
+                    </div>}
                 </div>
-                { videoIncoming && <div className="absolute -bottom-3/4 right-5 rounded-lg border-2 border-white p-2 font-text flex gap-2">
-                    <div className="">Video Incoming</div>
-                    <button onClick={acceptIncomingVideoCall} className="text-sm bg-green-600 px-2 rounded-lg">Accept</button>
-                    <button onClick={refuseIncomingVideoCall} className="text-sm bg-red-400 px-2 rounded-lg">Refuse</button>
-                </div>}
             </header>
 
             { videoShow && <section className="flex-[2] h-full relative">
                 <div className="w-[80%] h-[30em] mt-[6em] m-auto relative">
                     <video ref={remoteVideoFeed} id='remote-video' className='rounded-lg w-full h-full' muted loop autoPlay playsInline
                         style={{ objectFit: "cover" }}
-                        src='https://videos.pexels.com/video-files/20594036/20594036-hd_1920_1080_25fps.mp4'
                     ></video>
 
                     <div className="absolute -bottom-5 -right-5 w-[20vw] h-[20vh] rounded-lg overflow-hidden">
                         <video ref={localVideoFeed} id='local-video' className='w-full h-full object-cover' muted loop autoPlay playsInline
-                            src='https://videos.pexels.com/video-files/20530134/20530134-hd_1920_1080_25fps.mp4'
                         ></video>
                     </div>
                 </div>

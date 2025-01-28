@@ -27,8 +27,8 @@ export const useChatSocket = () => {
     const [readIndex, setReadIndex] = useState<number | null>(null);
     const [partnerTyping, setPartnerTyping] = useState(false);
 
-    const { localStream, remoteStream, connected, createOffer,
-         createAnswer, addAnswer, disconnect: disconnectVideo } = useVideoWebRTC();
+    const { localStream, remoteStream, createOffer, createAnswer, addAnswer,
+        connected: connectedVideo, setConnected: setConnectedVideo, disconnect: disconnectVideo } = useVideoWebRTC();
 
     const [offer, setOffer] = useState<string>("");
     const [answer, setAnswer] = useState<string>("");
@@ -203,16 +203,19 @@ export const useChatSocket = () => {
             if(socket && partner) {
                 socket.emit(ClientEvents.ACCEPT_VIDEO_CALL, { answer: JSON.stringify(value)})
             }
+            setConnectedVideo(true);
         });
-    }, [createAnswer, offer, partner, socket])
+    }, [createAnswer, setConnectedVideo, offer, partner, socket])
        
     useEffect(() => {
         if(answer.length > 0) {
             addAnswer(JSON.parse(answer));
             setVideoIncoming(false);
             setVideoShow(true);
+        } else {
+            setConnectedVideo(false);
         }
-    }, [addAnswer, answer]);
+    }, [addAnswer, setConnectedVideo, answer]);
 
     const hangOngoingVideoCall = useCallback(() => {
         disconnectVideo();
@@ -226,8 +229,9 @@ export const useChatSocket = () => {
     }, [socket, partner, disconnectVideo])
 
     const disconnect = useCallback(() => {
+        if(connectedVideo) hangOngoingVideoCall();
         socket?.emit(ClientEvents.DISCONNECT_PARTNER);
-    }, [socket]);
+    }, [socket, connectedVideo, hangOngoingVideoCall]);
 
     return {
         user,
@@ -241,7 +245,7 @@ export const useChatSocket = () => {
         videoShow,
         localStream,
         remoteStream,
-        connected,
+        connected: connectedVideo,
         setUserName,
         findPartner,
         sendMessage,

@@ -19,9 +19,18 @@ export const useVideoWebRTC = () => {
             audio: true,
         })
         setLocalStream(stream);
+        return stream;
+    }
+
+    const destroy = () => {
+        if(localStream) {
+            localStream?.getTracks().forEach(track => track.stop());
+            setLocalStream(null);
+        }
     }
 
     const createPeerConnection = (callback: (value: RTCSessionDescriptionInit | null) => void) => {
+
         peerConnection.current = new RTCPeerConnection(servers);
         const newRemoteStream = new MediaStream();
         setRemoteStream(newRemoteStream);
@@ -89,6 +98,7 @@ export const useVideoWebRTC = () => {
 
     return {
         init,
+        destroy,
         localStream,
         remoteStream,
         createOffer,

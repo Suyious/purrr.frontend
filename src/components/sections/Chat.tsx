@@ -16,17 +16,26 @@ type ChatProps = {
     messages: Message[],
     readIndex: number | null,
     partnerTyping: boolean,
+    videoIncoming: boolean,
+    videoShow: boolean,
+    localStream: MediaStream | null,
+    remoteStream: MediaStream | null,
+    connected: boolean,
     onMessage: (message: string | null, image: string | null, reply: number | null) => void,
     onStop: () => void,
     onReconnect: () => void,
     readMessage: (messageId: number) => void,
     startTyping: () => void,
     stopTyping: () => void,
+    startVideoCall: (callback: () => void) => void,
+    refuseIncomingVideoCall: () => void, 
+    acceptIncomingVideoCall: () => void,
 }
 
 export default function Chat({ 
-    partner, messages, readIndex, partnerTyping, onMessage, onStop,
-    onReconnect, readMessage, startTyping, stopTyping }: ChatProps
+    partner, messages, readIndex, partnerTyping, videoIncoming, videoShow, onMessage, onStop,
+    onReconnect, readMessage, startTyping, stopTyping, startVideoCall, refuseIncomingVideoCall, acceptIncomingVideoCall,
+    localStream, remoteStream, connected}: ChatProps
 ) {
 
     const message = useRef<HTMLTextAreaElement>(null);
@@ -35,6 +44,9 @@ export default function Chat({
     const chatInput = useRef<HTMLFormElement>(null)
     const timer = useRef<number>();
 
+    const localVideoFeed = useRef<HTMLVideoElement>(null);
+    const remoteVideoFeed = useRef<HTMLVideoElement>(null);
+
     const TYPINGTIMEOUT = 500;
 
     const [attachment, setAttachment] = useState<string>("");
@@ -42,7 +54,6 @@ export default function Chat({
     const [typing, setTyping] = useState<boolean>(false);
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
     const [chatHeightOffset, setChatHeightOffset] = useState<number>(80);
-    const [showVideoSplit, setShowVideoSplit] = useState<boolean>(false);
 
     const scrollToBottom = useCallback(() => {
         if (!document.hidden) {
@@ -207,6 +218,26 @@ export default function Chat({
         message.current?.focus();
     }
 
+    useEffect(() => {
+        if (localVideoFeed.current) {
+            localVideoFeed.current.srcObject = localStream;
+        }
+    }, [localStream, videoShow])
+
+    useEffect(() => {
+        if (remoteVideoFeed.current) {
+            remoteVideoFeed.current.srcObject = remoteStream;
+        }
+    }, [remoteStream, connected, videoShow])
+
+    function onVideoCallStart() {
+        startVideoCall(() => {
+            if (localVideoFeed.current) {
+                localVideoFeed.current.srcObject = localStream;
+            }
+        });
+    }
+
     return (
         <div className="flex w-full h-full justify-between">
 
@@ -217,22 +248,27 @@ export default function Chat({
                         <h2>{partner} {partnerTyping && <small className="font-text">Typing...</small>}</h2>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setShowVideoSplit(p => !p)}><VideoIcon /></button>
+                        <button onClick={onVideoCallStart}><VideoIcon /></button>
                         <button onClick={onRefresh}><RefreshIcon /></button>
                         <button onClick={onStop}><ExitIcon /></button>
                     </div>
                 </div>
+                { videoIncoming && <div className="absolute -bottom-3/4 right-5 rounded-lg border-2 border-white p-2 font-text flex gap-2">
+                    <div className="">Video Incoming</div>
+                    <button onClick={acceptIncomingVideoCall} className="text-sm bg-green-600 px-2 rounded-lg">Accept</button>
+                    <button onClick={refuseIncomingVideoCall} className="text-sm bg-red-400 px-2 rounded-lg">Refuse</button>
+                </div>}
             </header>
 
-            { showVideoSplit && <section className="flex-[2] h-full relative">
+            { videoShow && <section className="flex-[2] h-full relative">
                 <div className="w-[80%] h-[30em] mt-[6em] m-auto relative">
-                    <video id='local-video' className='rounded-lg w-full h-full' muted loop autoPlay playsInline
+                    <video ref={remoteVideoFeed} id='remote-video' className='rounded-lg w-full h-full' muted loop autoPlay playsInline
                         style={{ objectFit: "cover" }}
                         src='https://videos.pexels.com/video-files/20594036/20594036-hd_1920_1080_25fps.mp4'
                     ></video>
 
                     <div className="absolute -bottom-5 -right-5 w-[20vw] h-[20vh] rounded-lg overflow-hidden">
-                        <video id='local-video' className='w-full h-full object-cover' muted loop autoPlay playsInline
+                        <video ref={localVideoFeed} id='local-video' className='w-full h-full object-cover' muted loop autoPlay playsInline
                             src='https://videos.pexels.com/video-files/20530134/20530134-hd_1920_1080_25fps.mp4'
                         ></video>
                     </div>
@@ -266,7 +302,7 @@ export default function Chat({
 
             </section>}
 
-            <section className={`flex-[1] relative w-full font-text  ${showVideoSplit ? "hidden lg:block": "block"}`}>
+            <section className={`flex-[1] relative w-full font-text  ${videoShow ? "hidden lg:block": "block"}`}>
 
                 <div className="h-[100vh] w-full overflow-y-scroll">
                     <div className="w-full max-w-[1080px] m-auto">

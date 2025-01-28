@@ -13,9 +13,6 @@ export const useVideoWebRTC = () => {
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const [connected, setConnected] = useState<boolean>(false);
 
-    const [temporary, setTemporary] = useState<boolean>(false);
-
-
     const init = async () => {
         const stream = await navigator.mediaDevices.getUserMedia({
             video: true,
@@ -65,17 +62,14 @@ export const useVideoWebRTC = () => {
 
         const answer = await peerConnection.current?.createAnswer();
         await peerConnection.current?.setLocalDescription(answer);
-
-        setTemporary(true);
-
     }
     
     const addAnswer = async (answer: RTCSessionDescriptionInit | null) => {
         if (!answer) return alert('NO ANSWER');
 
-        if(peerConnection.current) {
+        if (peerConnection.current) {
             if (!peerConnection.current.currentRemoteDescription) {
-                peerConnection.current.setRemoteDescription(answer);
+                await peerConnection.current.setRemoteDescription(answer);
                 setConnected(true);
             }
         }
@@ -94,6 +88,7 @@ export const useVideoWebRTC = () => {
     }, [])
 
     return {
+        init,
         localStream,
         remoteStream,
         createOffer,
@@ -102,6 +97,5 @@ export const useVideoWebRTC = () => {
         connected,
         setConnected,
         disconnect,
-        temporary,
     }
 }

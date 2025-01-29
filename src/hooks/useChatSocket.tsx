@@ -238,9 +238,10 @@ export const useChatSocket = () => {
     }, [callHanged, disconnectVideo])
 
     const disconnect = useCallback(() => {
+        if(videoIncoming) refuseIncomingVideoCall();
         if(connectedVideo) hangOngoingVideoCall();
         socket?.emit(ClientEvents.DISCONNECT_PARTNER);
-    }, [socket, connectedVideo, hangOngoingVideoCall]);
+    }, [socket, connectedVideo, hangOngoingVideoCall, videoIncoming, refuseIncomingVideoCall]);
 
     return {
         user,

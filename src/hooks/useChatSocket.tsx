@@ -34,6 +34,7 @@ export const useChatSocket = () => {
     const [answer, setAnswer] = useState<string>("");
     const [videoIncoming, setVideoIncoming] = useState<boolean>(false);
     const [videoShow, setVideoShow] = useState<boolean>(false);
+    const [callHanged, setCallHanded] = useState<boolean>(false);
 
     useEffect(() => {
         const newSocket = io(SOCKET_SERVER_URL) as Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -105,6 +106,7 @@ export const useChatSocket = () => {
         newSocket.on(ServerEvents.REFUSED_VIDEO_CALL, () => {
             setOffer("");
             setVideoShow(false);
+            setCallHanded(true);
         })
 
         newSocket.on(ServerEvents.ACCEPTED_VIDEO_CALL, ({ answer: value }) => {
@@ -116,6 +118,7 @@ export const useChatSocket = () => {
             setAnswer("");
             setVideoIncoming(false);
             setVideoShow(false);
+            setCallHanded(true);
         })
 
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, async () => {
@@ -178,13 +181,12 @@ export const useChatSocket = () => {
         }
     }, [socket, partner]);
 
-    const startVideoCall = useCallback(async (callback: () => void) => {
+    const startVideoCall = useCallback(async () => {
         createOffer((value) => {
             setOffer(JSON.stringify(value));
             if(socket && partner) {
                 socket.emit(ClientEvents.START_VIDEO_CALL, { offer: JSON.stringify(value) });
                 setVideoShow(true);
-                callback();
             }
         });
     }, [socket, partner, createOffer])
@@ -227,6 +229,13 @@ export const useChatSocket = () => {
             socket.emit(ClientEvents.HANG_VIDEO_CALL);
         }
     }, [socket, partner, disconnectVideo])
+
+    useEffect(() => {
+        if(callHanged){
+            disconnectVideo();
+            setCallHanded(false);
+        }
+    }, [callHanged, disconnectVideo])
 
     const disconnect = useCallback(() => {
         if(connectedVideo) hangOngoingVideoCall();

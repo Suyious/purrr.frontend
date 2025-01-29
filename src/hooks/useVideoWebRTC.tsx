@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 export const useVideoWebRTC = () => {
     const servers = {
@@ -29,15 +29,15 @@ export const useVideoWebRTC = () => {
         }
     }
 
-    const createPeerConnection = (callback: (value: RTCSessionDescriptionInit | null) => void) => {
+    const createPeerConnection = (stream: MediaStream, callback: (value: RTCSessionDescriptionInit | null) => void) => {
 
         peerConnection.current = new RTCPeerConnection(servers);
         const newRemoteStream = new MediaStream();
         setRemoteStream(newRemoteStream);
 
-        if(localStream) {
-            localStream.getTracks().forEach(track => {
-                peerConnection.current?.addTrack(track, localStream);
+        if(stream) {
+            stream.getTracks().forEach(track => {
+                peerConnection.current?.addTrack(track, stream);
             })
         }
 
@@ -57,13 +57,15 @@ export const useVideoWebRTC = () => {
     }
 
     const createOffer = async (callback: (value: RTCSessionDescriptionInit | null) => void) => {
-        createPeerConnection(callback)
+        const stream = await init();
+        createPeerConnection(stream, callback)
         const offer = await peerConnection.current?.createOffer();
         await peerConnection.current?.setLocalDescription(offer);
     }
 
     const createAnswer = async (offer: RTCSessionDescriptionInit | null ,callback: (value: RTCSessionDescriptionInit | null) => void) => {
-        createPeerConnection(callback);
+        const stream = await init();
+        createPeerConnection(stream, callback);
 
         if (!offer) return alert("NO OFFER");
 
@@ -90,11 +92,8 @@ export const useVideoWebRTC = () => {
             setRemoteStream(null);
             setConnected(false);
         }
+        destroy();
     }
-
-    useEffect(() => {
-        init();
-    }, [])
 
     return {
         init,

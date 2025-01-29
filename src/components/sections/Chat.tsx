@@ -27,7 +27,7 @@ type ChatProps = {
     readMessage: (messageId: number) => void,
     startTyping: () => void,
     stopTyping: () => void,
-    startVideoCall: (callback: () => void) => void,
+    startVideoCall: () => void,
     refuseIncomingVideoCall: () => void, 
     acceptIncomingVideoCall: () => void,
     hangOngoingVideoCal: () => void,
@@ -234,11 +234,7 @@ export default function Chat({
 
     function onVideoCallStart() {
         if(!connected) {
-            startVideoCall(() => {
-                if (localVideoFeed.current) {
-                    localVideoFeed.current.srcObject = localStream;
-                }
-            });
+            startVideoCall();
         }
     }
 

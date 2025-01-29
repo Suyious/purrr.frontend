@@ -238,6 +238,25 @@ export default function Chat({
         }
     }
 
+    const [videoTrackEnabled, setVideoTrackEnabled] = useState<boolean>(true);
+    const [audioTrackEnabled, setAudioTrackEnabled] = useState<boolean>(true);
+
+    function toggleLocalVideoStream() {
+        if(localStream) {
+            const videoTrack = localStream.getVideoTracks()[0];
+            videoTrack.enabled = !videoTrack.enabled;
+            setVideoTrackEnabled(videoTrack.enabled);
+        }
+    }
+
+    function toggleLocalAudioStream() {
+        if(localStream) {
+            const audioTrack = localStream.getAudioTracks()[0];
+            audioTrack.enabled = !audioTrack.enabled;
+            setAudioTrackEnabled(audioTrack.enabled)
+        }
+    }
+
     return (
         <div className="flex w-full h-full justify-between">
 
@@ -280,13 +299,15 @@ export default function Chat({
                             </button>
                         </div>
                         <div className="flex gap-4">
-                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
+                            <button onClick={toggleLocalVideoStream}
+                                className={`w-[4em] h-[4em] flex justify-center items-center rounded-[50px] ${ videoTrackEnabled ? "bg-blue-600": "bg-white/40"}`}>
                                 <VideoIcon width="30"/>
                             </button>
                             <button onClick={hangOngoingVideoCal} className="w-[4em] h-[4em] flex justify-center items-center bg-red-500 rounded-[50px]">
                                 <PhoneIcon width="30"/>
                             </button>
-                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
+                            <button onClick={toggleLocalAudioStream}
+                                className={`w-[4em] h-[4em] flex justify-center items-center rounded-[50px] ${ audioTrackEnabled ? "bg-blue-500": "bg-white/40"}`}>
                                 <AudioIcon width="30"/>
                             </button>
                         </div>

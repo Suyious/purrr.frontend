@@ -322,7 +322,7 @@ export default function Chat({
 
             <section className={`flex-[1] relative w-full font-text  ${videoShow ? "hidden lg:block": "block"}`}>
 
-                <div className="h-[100vh] w-full overflow-y-scroll">
+                <div className="h-[100dvh] w-full overflow-y-scroll">
                     <div className="w-full max-w-[1080px] m-auto">
                         <ChatDisplay chatBottom={chatBottom} chatHeightOffset={chatHeightOffset} messages={messages} partner={partner} readIndex={readIndex} replyTo={replyTo}/>
                     </div>

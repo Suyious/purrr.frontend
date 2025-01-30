@@ -279,39 +279,39 @@ export default function Chat({
             </header>
 
             { videoShow && <section className="flex-[2] h-full relative">
-                <div className="w-[80%] h-[30em] mt-[6em] m-auto relative">
+                <div className="w-full max-w-[800px] h-[30em] mt-[6em] px-4 m-auto relative">
                     <video ref={remoteVideoFeed} id='remote-video' className='rounded-lg w-full h-full' loop autoPlay playsInline
                         style={{ objectFit: "cover" }}
                     ></video>
 
-                    <div className="absolute -bottom-5 -right-5 w-[20vw] h-[20vh] rounded-lg overflow-hidden">
+                    <div className="absolute bottom-5 md:-bottom-5 right-7 md:-right-5 w-[20vw] h-[20vh] rounded-lg overflow-hidden">
                         <video ref={localVideoFeed} id='local-video' className='w-full h-full object-cover' muted loop autoPlay playsInline
                         ></video>
                     </div>
                 </div>
 
                 <div className="absolute bottom-[1em] w-full left-1/2 px-4 -translate-x-1/2">
-                    <div className="bg-slate-500/60 w-[80%] m-auto h-[5em] rounded-3xl flex justify-between items-center px-4">
+                    <div className="bg-slate-500/60 w-full max-w-[800px] m-auto h-[5em] rounded-3xl flex justify-between items-center px-4">
                         <div className="">
-                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
+                            <button className="w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
                                 <MenuIcon width="30"/>
                             </button>
                         </div>
                         <div className="flex gap-4">
                             <button onClick={() => setVideoTrackEnabled(p => !p)}
-                                className={`w-[4em] h-[4em] flex justify-center items-center rounded-[50px] ${ videoTrackEnabled ? "bg-blue-600": "bg-white/40"}`}>
+                                className={`w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center rounded-[50px] ${ videoTrackEnabled ? "bg-blue-600": "bg-white/40"}`}>
                                 <VideoIcon width="30"/>
                             </button>
-                            <button onClick={hangOngoingVideoCal} className="w-[4em] h-[4em] flex justify-center items-center bg-red-500 rounded-[50px]">
+                            <button onClick={hangOngoingVideoCal} className="w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center bg-red-500 rounded-[50px]">
                                 <PhoneIcon width="30"/>
                             </button>
                             <button onClick={() => setAudioTrackEnabled(p => !p)}
-                                className={`w-[4em] h-[4em] flex justify-center items-center rounded-[50px] ${ audioTrackEnabled ? "bg-blue-500": "bg-white/40"}`}>
+                                className={`w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center rounded-[50px] ${ audioTrackEnabled ? "bg-blue-500": "bg-white/40"}`}>
                                 <AudioIcon width="30"/>
                             </button>
                         </div>
                         <div className="">
-                            <button className="w-[4em] h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
+                            <button className="w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
                                 <ChatIcon width="30"/>
                             </button>
                         </div>

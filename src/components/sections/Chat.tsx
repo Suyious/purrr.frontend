@@ -5,6 +5,7 @@ import { Message } from "@/types/messages";
 import { ChangeEvent, FormEvent, KeyboardEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import ChatInput from "../resusable/ChatInput";
 import { ChatDisplay } from "../resusable/ChatDisplay";
+import CallIcon from "@/assets/icons/call";
 
 type ChatProps = {
     partner: string,
@@ -12,6 +13,11 @@ type ChatProps = {
     readIndex: number | null,
     partnerTyping: boolean,
     onMessage: (message: string | null, image: string | null, reply: number | null) => void,
+    onVideoCall: () => void,
+    startVideoCall: () => void,
+    incomingCall: boolean,
+    ongoingCall: boolean,
+    declineIncomingCall: () => void,
     onStop: () => void,
     onReconnect: () => void,
     readMessage: (messageId: number) => void,
@@ -19,9 +25,9 @@ type ChatProps = {
     stopTyping: () => void,
 }
 
-export default function Chat({ 
-    partner, messages, readIndex, partnerTyping, onMessage, onStop,
-    onReconnect, readMessage, startTyping, stopTyping }: ChatProps
+export default function Chat({
+    partner, messages, readIndex, partnerTyping, onMessage, onVideoCall, incomingCall, ongoingCall, startVideoCall, declineIncomingCall,
+    onStop, onReconnect, readMessage, startTyping, stopTyping }: ChatProps
 ) {
 
     const message = useRef<HTMLTextAreaElement>(null);
@@ -112,18 +118,18 @@ export default function Chat({
             scrollToBottom();
         });
         let ref = null;
-        if(chatInput.current) {
+        if (chatInput.current) {
             observer.observe(chatInput.current)
             ref = chatInput.current;
         }
 
         return () => {
-            if(ref) observer.unobserve(ref)
+            if (ref) observer.unobserve(ref)
         }
     }, [chatInput.current?.height, scrollToBottom])
 
     const onMessageChange: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-        if(e.key === "Enter" && e.shiftKey === false) {
+        if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
             submitMessage();
             return;
@@ -153,7 +159,7 @@ export default function Chat({
             setAttachment("");
         }
 
-        if(replyingTo !== null) {
+        if (replyingTo !== null) {
             reply = replyingTo;
             setReplyingTo(null);
         }
@@ -192,7 +198,7 @@ export default function Chat({
 
     function clearAttachment() {
         setAttachment("");
-        if(fileinput.current) fileinput.current.value = "";
+        if (fileinput.current) fileinput.current.value = "";
         message.current?.focus();
     }
 
@@ -204,7 +210,7 @@ export default function Chat({
     return (
         <section className={"w-full flex justify-center items-end relative font-text"}>
 
-            <ChatDisplay chatBottom={chatBottom} chatHeightOffset={chatHeightOffset} messages={messages} partner={partner} readIndex={readIndex} replyTo={replyTo}/>
+            <ChatDisplay chatBottom={chatBottom} chatHeightOffset={chatHeightOffset} messages={messages} partner={partner} readIndex={readIndex} replyTo={replyTo} />
 
             {unread > 0 && <button onClick={scrollToBottom} className="fixed bottom-[5em]">
                 <div className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute right-0">{unread}</div>
@@ -216,6 +222,20 @@ export default function Chat({
                     <div className="">
                         <h4 className="text-[0.8em]">You&apos;re connected to</h4>
                         <h2>{partner} {partnerTyping && <small className="font-text">Typing...</small>}</h2>
+                    </div>
+                    {incomingCall && <div className="flex gap-2 ml-auto">
+                        Incoming Video Call
+                        <button className="p-2 rounded-full bg-green-500" onClick={startVideoCall}>Yes</button>
+                        <button className="p-2 rounded-full bg-red-500" onClick={declineIncomingCall}>No</button>
+                    </div>}
+                    {ongoingCall && <div className="flex gap-2 ml-auto">
+                        In a Video Call 00:00 (insert dynamic counter here)
+                    </div>}
+                    <div className="flex gap-2 ml-auto mr-8">
+                        {!(incomingCall || ongoingCall) && <button onClick={onVideoCall}>
+                            <CallIcon />
+                        </button>
+                        }
                     </div>
                     <div className="flex gap-2">
                         <button onClick={onRefresh}><RefreshIcon /></button>

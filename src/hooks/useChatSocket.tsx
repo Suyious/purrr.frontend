@@ -69,7 +69,7 @@ export const useChatSocket = () => {
             const selfPk = await getKey(KeyTransaction.SELF_PK);
             const sharedSecret = await deriveSharedSecret(selfPk!, partnerPk!);
             const decryptedMsg = data.body ? await decryptMessage(data.body, sharedSecret) : null;
-            const decryptedImg = data.image? await decryptMessage(data.image, sharedSecret): null;
+            const decryptedImg = data.image ? await decryptMessage(data.image, sharedSecret) : null;
 
             data.body = decryptedMsg;
             data.image = decryptedImg;
@@ -124,8 +124,8 @@ export const useChatSocket = () => {
             const selfPk = await getKey(KeyTransaction.SELF_PK);
             const sharedSecret = await deriveSharedSecret(selfPk!, partnerPk!);
             const encryptedMsg = message ? await encryptMessage(message, sharedSecret) : null;
-            const encryptedImg = image? await encryptMessage(image, sharedSecret, true): null;
-            
+            const encryptedImg = image ? await encryptMessage(image, sharedSecret, true) : null;
+
             socket.emit(ClientEvents.SEND_MESSAGE, { message: encryptedMsg, image: encryptedImg, reply });
         }
     }, [socket, partner]);
@@ -153,6 +153,7 @@ export const useChatSocket = () => {
     }, [socket]);
 
     return {
+        socket,
         user,
         partner,
         messages,

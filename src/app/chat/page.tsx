@@ -22,6 +22,15 @@ export default function ChatPage() {
     startTyping,
     stopTyping,
     partnerTyping,
+    startVideoCall,
+    refuseIncomingVideoCall,
+    acceptIncomingVideoCall,
+    hangOngoingVideoCall,
+    videoIncoming,
+    videoShow,
+    localStream,
+    remoteStream,
+    connected,
     disconnect,
   } = useChatSocket();
 
@@ -41,7 +50,12 @@ export default function ChatPage() {
                           onMessage={sendMessage} messages={messages}
                           onStop={disconnect} onReconnect={findPartner}
                           readIndex={readIndex} readMessage={readMessage}
-                          startTyping={startTyping} stopTyping={stopTyping} partnerTyping={partnerTyping} />;
+                          startTyping={startTyping} stopTyping={stopTyping} partnerTyping={partnerTyping} 
+                          startVideoCall={startVideoCall} videoIncoming={videoIncoming}
+                          refuseIncomingVideoCall={refuseIncomingVideoCall} videoShow={videoShow}
+                          acceptIncomingVideoCall={acceptIncomingVideoCall}
+                          localStream={localStream} remoteStream={remoteStream} connected={connected}
+                          hangOngoingVideoCal={hangOngoingVideoCall}/>;
         }
       } else { // if user is waiting for a partner
         content = <WaitingForChat />;

@@ -12,6 +12,7 @@ import {
     importPublicKey
 } from '../utils/encryption';
 import { getKey, KeyTransaction, storeKey } from "@/utils/keyTransaction";
+import { useVideoWebRTC } from "./useVideoWebRTC";
 
 export const useChatSocket = () => {
 
@@ -25,6 +26,15 @@ export const useChatSocket = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [readIndex, setReadIndex] = useState<number | null>(null);
     const [partnerTyping, setPartnerTyping] = useState(false);
+
+    const { localStream, remoteStream, createOffer, createAnswer, addAnswer,
+        connected: connectedVideo, setConnected: setConnectedVideo, disconnect: disconnectVideo } = useVideoWebRTC();
+
+    const [offer, setOffer] = useState<string>("");
+    const [answer, setAnswer] = useState<string>("");
+    const [videoIncoming, setVideoIncoming] = useState<boolean>(false);
+    const [videoShow, setVideoShow] = useState<boolean>(false);
+    const [callHanged, setCallHanged] = useState<boolean>(false);
 
     useEffect(() => {
         const newSocket = io(SOCKET_SERVER_URL) as Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -88,8 +98,36 @@ export const useChatSocket = () => {
             setPartnerTyping(false);
         });
 
+        newSocket.on(ServerEvents.RECIEVE_VIDEO_CALL, ({ offer: value }) => {
+            setOffer(value);
+            setVideoIncoming(true);
+        })
+
+        newSocket.on(ServerEvents.REFUSED_VIDEO_CALL, () => {
+            setOffer("");
+            setVideoShow(false);
+            setCallHanged(true);
+        })
+
+        newSocket.on(ServerEvents.ACCEPTED_VIDEO_CALL, ({ answer: value }) => {
+            setAnswer(value);
+        })
+
+        newSocket.on(ServerEvents.HANGED_VIDEO_CALL, () => {
+            setOffer("");
+            setAnswer("");
+            setVideoIncoming(false);
+            setVideoShow(false);
+            setCallHanged(true);
+        })
+
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, async () => {
             setPartner(null);
+            setOffer("");
+            setAnswer("");
+            setVideoIncoming(false);
+            setVideoShow(false);
+            setCallHanged(true);
             await storeKey(KeyTransaction.PARTNER_PK, null);
         })
 
@@ -148,9 +186,67 @@ export const useChatSocket = () => {
         }
     }, [socket, partner]);
 
+    const startVideoCall = useCallback(async () => {
+        createOffer((value) => {
+            setOffer(JSON.stringify(value));
+            if(socket && partner) {
+                socket.emit(ClientEvents.START_VIDEO_CALL, { offer: JSON.stringify(value) });
+                setVideoShow(true);
+            }
+        });
+    }, [socket, partner, createOffer])
+
+    const refuseIncomingVideoCall = useCallback(() => {
+        setOffer("");
+        setVideoIncoming(false);
+        if(socket && partner) {
+            socket.emit(ClientEvents.REFUSE_VIDEO_CALL);
+        }
+    }, [socket, partner])
+
+    const acceptIncomingVideoCall = useCallback(() => {
+        createAnswer(JSON.parse(offer), (value) => {
+            setAnswer(JSON.stringify(value))
+            if(socket && partner) {
+                socket.emit(ClientEvents.ACCEPT_VIDEO_CALL, { answer: JSON.stringify(value)})
+            }
+            setConnectedVideo(true);
+        });
+    }, [createAnswer, setConnectedVideo, offer, partner, socket])
+       
+    useEffect(() => {
+        if(answer.length > 0) {
+            addAnswer(JSON.parse(answer));
+            setVideoIncoming(false);
+            setVideoShow(true);
+        } else {
+            setConnectedVideo(false);
+        }
+    }, [addAnswer, setConnectedVideo, answer]);
+
+    const hangOngoingVideoCall = useCallback(() => {
+        disconnectVideo();
+        setOffer("");
+        setAnswer("");
+        setVideoIncoming(false);
+        setVideoShow(false);
+        if(socket && partner) {
+            socket.emit(ClientEvents.HANG_VIDEO_CALL);
+        }
+    }, [socket, partner, disconnectVideo])
+
+    useEffect(() => {
+        if(callHanged){
+            disconnectVideo();
+            setCallHanged(false);
+        }
+    }, [callHanged, disconnectVideo])
+
     const disconnect = useCallback(() => {
+        if(videoIncoming) refuseIncomingVideoCall();
+        if(connectedVideo) hangOngoingVideoCall();
         socket?.emit(ClientEvents.DISCONNECT_PARTNER);
-    }, [socket]);
+    }, [socket, connectedVideo, hangOngoingVideoCall, videoIncoming, refuseIncomingVideoCall]);
 
     return {
         user,
@@ -160,12 +256,21 @@ export const useChatSocket = () => {
         isWaiting,
         readIndex,
         partnerTyping,
+        videoIncoming,
+        videoShow,
+        localStream,
+        remoteStream,
+        connected: connectedVideo,
         setUserName,
         findPartner,
         sendMessage,
         readMessage,
         startTyping,
         stopTyping,
+        startVideoCall,
+        refuseIncomingVideoCall,
+        acceptIncomingVideoCall,
+        hangOngoingVideoCall,
         disconnect,
     }
 }

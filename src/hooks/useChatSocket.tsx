@@ -34,7 +34,7 @@ export const useChatSocket = () => {
     const [answer, setAnswer] = useState<string>("");
     const [videoIncoming, setVideoIncoming] = useState<boolean>(false);
     const [videoShow, setVideoShow] = useState<boolean>(false);
-    const [callHanged, setCallHanded] = useState<boolean>(false);
+    const [callHanged, setCallHanged] = useState<boolean>(false);
 
     useEffect(() => {
         const newSocket = io(SOCKET_SERVER_URL) as Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -106,7 +106,7 @@ export const useChatSocket = () => {
         newSocket.on(ServerEvents.REFUSED_VIDEO_CALL, () => {
             setOffer("");
             setVideoShow(false);
-            setCallHanded(true);
+            setCallHanged(true);
         })
 
         newSocket.on(ServerEvents.ACCEPTED_VIDEO_CALL, ({ answer: value }) => {
@@ -118,11 +118,16 @@ export const useChatSocket = () => {
             setAnswer("");
             setVideoIncoming(false);
             setVideoShow(false);
-            setCallHanded(true);
+            setCallHanged(true);
         })
 
         newSocket.on(ServerEvents.PARTNER_DISCONNECTED, async () => {
             setPartner(null);
+            setOffer("");
+            setAnswer("");
+            setVideoIncoming(false);
+            setVideoShow(false);
+            setCallHanged(true);
             await storeKey(KeyTransaction.PARTNER_PK, null);
         })
 
@@ -233,7 +238,7 @@ export const useChatSocket = () => {
     useEffect(() => {
         if(callHanged){
             disconnectVideo();
-            setCallHanded(false);
+            setCallHanged(false);
         }
     }, [callHanged, disconnectVideo])
 

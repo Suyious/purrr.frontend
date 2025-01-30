@@ -241,21 +241,20 @@ export default function Chat({
     const [videoTrackEnabled, setVideoTrackEnabled] = useState<boolean>(true);
     const [audioTrackEnabled, setAudioTrackEnabled] = useState<boolean>(true);
 
-    function toggleLocalVideoStream() {
+    useEffect(() => {
         if(localStream) {
             const videoTrack = localStream.getVideoTracks()[0];
-            videoTrack.enabled = !videoTrack.enabled;
-            setVideoTrackEnabled(videoTrack.enabled);
+            videoTrack.enabled = videoTrackEnabled;
         }
-    }
+    }, [localStream, videoTrackEnabled])
 
-    function toggleLocalAudioStream() {
+    useEffect(() => {
         if(localStream) {
             const audioTrack = localStream.getAudioTracks()[0];
-            audioTrack.enabled = !audioTrack.enabled;
-            setAudioTrackEnabled(audioTrack.enabled)
+            audioTrack.enabled = audioTrackEnabled;
         }
-    }
+
+    }, [localStream, audioTrackEnabled])
 
     return (
         <div className="flex w-full h-full justify-between">
@@ -281,7 +280,7 @@ export default function Chat({
 
             { videoShow && <section className="flex-[2] h-full relative">
                 <div className="w-[80%] h-[30em] mt-[6em] m-auto relative">
-                    <video ref={remoteVideoFeed} id='remote-video' className='rounded-lg w-full h-full' muted loop autoPlay playsInline
+                    <video ref={remoteVideoFeed} id='remote-video' className='rounded-lg w-full h-full' loop autoPlay playsInline
                         style={{ objectFit: "cover" }}
                     ></video>
 
@@ -299,14 +298,14 @@ export default function Chat({
                             </button>
                         </div>
                         <div className="flex gap-4">
-                            <button onClick={toggleLocalVideoStream}
+                            <button onClick={() => setVideoTrackEnabled(p => !p)}
                                 className={`w-[4em] h-[4em] flex justify-center items-center rounded-[50px] ${ videoTrackEnabled ? "bg-blue-600": "bg-white/40"}`}>
                                 <VideoIcon width="30"/>
                             </button>
                             <button onClick={hangOngoingVideoCal} className="w-[4em] h-[4em] flex justify-center items-center bg-red-500 rounded-[50px]">
                                 <PhoneIcon width="30"/>
                             </button>
-                            <button onClick={toggleLocalAudioStream}
+                            <button onClick={() => setAudioTrackEnabled(p => !p)}
                                 className={`w-[4em] h-[4em] flex justify-center items-center rounded-[50px] ${ audioTrackEnabled ? "bg-blue-500": "bg-white/40"}`}>
                                 <AudioIcon width="30"/>
                             </button>

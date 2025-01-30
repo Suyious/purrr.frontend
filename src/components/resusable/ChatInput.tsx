@@ -73,7 +73,7 @@ export default function ChatInput({
             </div> }
 
             {replyingTo !== null &&
-                <div className="w-full h-16 border-foreground border-t-2 px-2">
+                <div className="w-full h-16 border-foreground border-t-2 px-2 relative">
                     <button type="button" onClick={() => replyTo(null)} className="bg-foreground font-[800] font-mono text-background text-[0.8em] w-5 h-5 flex justify-center items-center rounded-[50%] absolute -top-2 -right-2">
                         <CloseIcon width="18" fill="background" />
                     </button>

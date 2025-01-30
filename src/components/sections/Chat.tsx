@@ -10,6 +10,7 @@ import { Message } from "@/types/messages";
 import { ChangeEvent, FormEvent, KeyboardEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import ChatInput from "../resusable/ChatInput";
 import { ChatDisplay } from "../resusable/ChatDisplay";
+import MirrorIcon from "@/assets/icons/mirror";
 
 type ChatProps = {
     partner: string,
@@ -256,6 +257,8 @@ export default function Chat({
 
     }, [localStream, audioTrackEnabled])
 
+    const [videoFlipped, setVideoFlipped] = useState<boolean>(true);
+
     return (
         <div className="flex w-full h-full justify-between">
 
@@ -278,15 +281,22 @@ export default function Chat({
                 </div>
             </header>
 
-            { videoShow && <section className="flex-[2] h-[100dvh] relative">
+            { videoShow && <section className="flex-[2] h-dvh relative">
                 <div className="w-full max-w-[800px] h-[calc(100dvh-7em)] md:h-[30em] mt-[6em] px-4 m-auto relative">
                     <video ref={remoteVideoFeed} id='remote-video' className='rounded-lg w-full h-full' loop autoPlay playsInline
                         style={{ objectFit: "cover" }}
                     ></video>
 
-                    <div className="absolute bottom-[6em] md:-bottom-5 right-7 md:-right-5 w-[20vw] h-[20vh] rounded-lg overflow-hidden">
-                        <video ref={localVideoFeed} id='local-video' className='w-full h-full object-cover' muted loop autoPlay playsInline
+                    <div className="absolute group bottom-[6em] md:-bottom-5 right-7 md:-right-5 w-[20vw] transition-all duration-150 hover:w-[30vw] hover:md:w-[25vw] h-[20vh] hover:h-[30vh] hover:md:h-[25vh] rounded-lg overflow-hidden">
+                        <video ref={localVideoFeed} id='local-video' className='w-full h-full object-cover'
+                            style={{
+                                transform: videoFlipped? "rotateY(180deg)": "rotateY(0)",
+                            }}
+                            muted loop autoPlay playsInline
                         ></video>
+                        <button onClick={() => setVideoFlipped(p => !p)} className="hidden group-hover:block absolute top-2 right-2">
+                            <MirrorIcon/>
+                        </button>
                     </div>
                 </div>
 
@@ -322,7 +332,7 @@ export default function Chat({
 
             <section className={`flex-[1] relative w-full font-text  ${videoShow ? "hidden lg:block": "block"}`}>
 
-                <div className="h-[100dvh] w-full overflow-y-scroll">
+                <div className="h-dvh w-full overflow-y-scroll">
                     <div className="w-full max-w-[1080px] m-auto">
                         <ChatDisplay chatBottom={chatBottom} chatHeightOffset={chatHeightOffset} messages={messages} partner={partner} readIndex={readIndex} replyTo={replyTo}/>
                     </div>

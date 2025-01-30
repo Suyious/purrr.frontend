@@ -279,7 +279,7 @@ export default function Chat({
             </header>
 
             { videoShow && <section className="flex-[2] h-[100dvh] relative">
-                <div className="w-full max-w-[800px] h-[calc(100vh-7em)] md:h-[30em] mt-[6em] px-4 m-auto relative">
+                <div className="w-full max-w-[800px] h-[calc(100dvh-7em)] md:h-[30em] mt-[6em] px-4 m-auto relative">
                     <video ref={remoteVideoFeed} id='remote-video' className='rounded-lg w-full h-full' loop autoPlay playsInline
                         style={{ objectFit: "cover" }}
                     ></video>

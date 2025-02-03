@@ -15,8 +15,11 @@ const config: Config = {
         accent: "var(--accent)",
       },
       fontFamily: {
-        "display": "var(--font-kalnia)",
+        "display": "var(--font-playfair-display)",
         "text": "var(--font-lato)",
+      },
+      boxShadow: {
+        "primary": "var(--box-shadow-primary)",
       }
     },
   },

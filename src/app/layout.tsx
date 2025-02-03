@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { kalnia, lato } from "@/assets/fonts";
+import { kalnia, lato, playfair_display } from "@/assets/fonts";
 
 export const metadata: Metadata = {
   title: "Purrr.chat | Talk to Strangers Online | Connect Now",
@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={kalnia.variable + " " + lato.variable}>
+      <body className={kalnia.variable + " " + lato.variable + " " + playfair_display.variable}>
         {children}
       </body>
     </html>

@@ -6,6 +6,7 @@
   --background: #EAF1FF;
   --foreground: #001118;
   --accent: #9100AB;
+  --box-shadow-primary: 0px 0px 1px 5px #9300ad4d;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,6 +14,7 @@
     --background: #001118;
     --foreground: #ededed;
     --accent: #9100AB;
+    --box-shadow-primary: 0px 0px 1px 5px #9300ad4d;
   }
 }
 

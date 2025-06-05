@@ -11,6 +11,7 @@ import { ChangeEvent, FormEvent, KeyboardEventHandler, useCallback, useEffect, u
 import ChatInput from "../resusable/ChatInput";
 import { ChatDisplay } from "../resusable/ChatDisplay";
 import MirrorIcon from "@/assets/icons/mirror";
+import { Room, createLocalVideoTrack, LocalParticipant, Track } from 'livekit-client';
 
 type ChatProps = {
     partner: string,
@@ -29,12 +30,12 @@ type ChatProps = {
     startTyping: () => void,
     stopTyping: () => void,
     startVideoCall: () => void,
-    refuseIncomingVideoCall: () => void, 
+    refuseIncomingVideoCall: () => void,
     acceptIncomingVideoCall: () => void,
     hangOngoingVideoCal: () => void,
 }
 
-export default function Chat({ 
+export default function Chat({
     partner, messages, readIndex, partnerTyping, videoIncoming, videoShow, onMessage, onStop,
     onReconnect, readMessage, startTyping, stopTyping,
     startVideoCall, refuseIncomingVideoCall, acceptIncomingVideoCall,
@@ -132,18 +133,18 @@ export default function Chat({
             scrollToBottom();
         });
         let ref = null;
-        if(chatInput.current) {
+        if (chatInput.current) {
             observer.observe(chatInput.current)
             ref = chatInput.current;
         }
 
         return () => {
-            if(ref) observer.unobserve(ref)
+            if (ref) observer.unobserve(ref)
         }
     }, [chatInput.current?.height, scrollToBottom])
 
     const onMessageChange: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-        if(e.key === "Enter" && e.shiftKey === false) {
+        if (e.key === "Enter" && e.shiftKey === false) {
             e.preventDefault();
             submitMessage();
             return;
@@ -173,7 +174,7 @@ export default function Chat({
             setAttachment("");
         }
 
-        if(replyingTo !== null) {
+        if (replyingTo !== null) {
             reply = replyingTo;
             setReplyingTo(null);
         }
@@ -212,7 +213,7 @@ export default function Chat({
 
     function clearAttachment() {
         setAttachment("");
-        if(fileinput.current) fileinput.current.value = "";
+        if (fileinput.current) fileinput.current.value = "";
         message.current?.focus();
     }
 
@@ -233,9 +234,72 @@ export default function Chat({
         }
     }, [remoteStream, connected, videoShow])
 
-    function onVideoCallStart() {
-        if(!connected) {
-            startVideoCall();
+    // function onVideoCallStart() {
+    //     /* OLD CODE */
+    //     // if(!connected) {
+    //     //     startVideoCall();
+    //     // }
+    // }
+
+
+
+
+    const [room, setRoom] = useState<Room | null>(null);
+    const [roomConnected, setRoomConnected] = useState(false);
+
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        if (!room || !room.localParticipant) return;
+
+        const publications = room.localParticipant.videoTrackPublications;
+
+        for (const [, publication] of publications) {
+            const videoTrack = publication.track;
+            if (videoTrack && videoRef.current) {
+                const element = videoTrack.attach();
+                element.muted = true;
+                element.style.width = '300px';
+                element.style.height = '200px';
+                videoRef.current.replaceWith(element);
+            }
+        }
+    }, [room]);
+
+    async function onVideoCallStart() {
+        console.log("onVideoCallStart called");
+
+        if (!roomConnected) {
+            const identity = "user-unique-id";
+            const roomName = "my-room";
+
+            try {
+
+                const URL = `http://localhost:3007/api/livekit-token`;
+                console.log("Fetching token from:", URL);
+                const res = await fetch(URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identity, room: roomName }),
+                });
+                const { token } = await res.json();
+
+                const livekitRoom = new Room();
+                await livekitRoom.connect(process.env.NEXT_PUBLIC_LIVEKIT_URL!, token);
+
+                const videoTrack = await createLocalVideoTrack();
+                await livekitRoom.localParticipant.publishTrack(videoTrack);
+
+                setRoom(livekitRoom);
+                setRoomConnected(true);
+
+                // Add event listeners to handle remote participants if you want
+                // livekitRoom.on('participantConnected', (participant) => {...})
+
+            } catch (error) {
+                console.error("Failed to start LiveKit call:", error);
+                alert("Could not start video call");
+            }
         }
     }
 
@@ -243,14 +307,14 @@ export default function Chat({
     const [audioTrackEnabled, setAudioTrackEnabled] = useState<boolean>(true);
 
     useEffect(() => {
-        if(localStream) {
+        if (localStream) {
             const videoTrack = localStream.getVideoTracks()[0];
             videoTrack.enabled = videoTrackEnabled;
         }
     }, [localStream, videoTrackEnabled])
 
     useEffect(() => {
-        if(localStream) {
+        if (localStream) {
             const audioTrack = localStream.getAudioTracks()[0];
             audioTrack.enabled = audioTrackEnabled;
         }
@@ -269,11 +333,11 @@ export default function Chat({
                         <h2>{partner} {partnerTyping && <small className="font-text">Typing...</small>}</h2>
                     </div>
                     <div className="flex gap-2">
-                        <button className="relative" onClick={onVideoCallStart}><VideoIcon /> { connected && <div className="w-2 h-2 absolute -top-1 -right-1 bg-green-400 rounded-full"></div>}</button>
+                        <button className="relative" onClick={onVideoCallStart}><VideoIcon /> {connected && <div className="w-2 h-2 absolute -top-1 -right-1 bg-green-400 rounded-full"></div>}</button>
                         <button onClick={onRefresh}><RefreshIcon /></button>
                         <button onClick={onStop}><ExitIcon /></button>
                     </div>
-                    { videoIncoming && <div className="absolute bg-background -bottom-3/4 right-5 rounded-lg border-2 border-white p-2 font-text flex gap-2">
+                    {videoIncoming && <div className="absolute bg-background -bottom-3/4 right-5 rounded-lg border-2 border-white p-2 font-text flex gap-2">
                         <div className="">Video Incoming</div>
                         <button onClick={acceptIncomingVideoCall} className="text-sm bg-green-600 px-2 rounded-lg">Accept</button>
                         <button onClick={refuseIncomingVideoCall} className="text-sm bg-red-400 px-2 rounded-lg">Refuse</button>
@@ -281,7 +345,9 @@ export default function Chat({
                 </div>
             </header>
 
-            { videoShow && <section className="flex-[2] h-dvh relative">
+            <video ref={videoRef} autoPlay muted playsInline />
+
+            {videoShow && <section className="flex-[2] h-dvh relative">
                 <div className="w-full max-w-[800px] h-[calc(100dvh-7em)] md:h-[30em] mt-[6em] px-4 m-auto relative">
                     <video ref={remoteVideoFeed} id='remote-video' className='rounded-lg w-full h-full' loop autoPlay playsInline
                         style={{ objectFit: "cover" }}
@@ -290,12 +356,12 @@ export default function Chat({
                     <div className="absolute group bottom-[6em] md:-bottom-5 right-7 md:-right-5 w-[20vw] transition-all duration-150 hover:w-[30vw] hover:md:w-[25vw] h-[20vh] hover:h-[30vh] hover:md:h-[25vh] rounded-lg overflow-hidden">
                         <video ref={localVideoFeed} id='local-video' className='w-full h-full object-cover'
                             style={{
-                                transform: videoFlipped? "rotateY(180deg)": "rotateY(0)",
+                                transform: videoFlipped ? "rotateY(180deg)" : "rotateY(0)",
                             }}
                             muted loop autoPlay playsInline
                         ></video>
                         <button onClick={() => setVideoFlipped(p => !p)} className="hidden group-hover:block absolute top-2 right-2">
-                            <MirrorIcon/>
+                            <MirrorIcon />
                         </button>
                     </div>
                 </div>
@@ -304,25 +370,25 @@ export default function Chat({
                     <div className="bg-slate-500/60 w-full max-w-[800px] m-auto h-[5em] rounded-3xl flex justify-between items-center px-4">
                         <div className="">
                             <button className="w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
-                                <MenuIcon width="30"/>
+                                <MenuIcon width="30" />
                             </button>
                         </div>
                         <div className="flex gap-4">
                             <button onClick={() => setVideoTrackEnabled(p => !p)}
-                                className={`w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center rounded-[50px] ${ videoTrackEnabled ? "bg-blue-600": "bg-white/40"}`}>
-                                <VideoIcon width="30"/>
+                                className={`w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center rounded-[50px] ${videoTrackEnabled ? "bg-blue-600" : "bg-white/40"}`}>
+                                <VideoIcon width="30" />
                             </button>
                             <button onClick={hangOngoingVideoCal} className="w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center bg-red-500 rounded-[50px]">
-                                <PhoneIcon width="30"/>
+                                <PhoneIcon width="30" />
                             </button>
                             <button onClick={() => setAudioTrackEnabled(p => !p)}
-                                className={`w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center rounded-[50px] ${ audioTrackEnabled ? "bg-blue-500": "bg-white/40"}`}>
-                                <AudioIcon width="30"/>
+                                className={`w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center rounded-[50px] ${audioTrackEnabled ? "bg-blue-500" : "bg-white/40"}`}>
+                                <AudioIcon width="30" />
                             </button>
                         </div>
                         <div className="">
                             <button className="w-[3em] h-[3em] sm:w-[4em] sm:h-[4em] flex justify-center items-center bg-white/40 rounded-[50px]">
-                                <ChatIcon width="30"/>
+                                <ChatIcon width="30" />
                             </button>
                         </div>
                     </div>
@@ -330,11 +396,11 @@ export default function Chat({
 
             </section>}
 
-            <section className={`flex-[1] relative w-full font-text  ${videoShow ? "hidden lg:block": "block"}`}>
+            <section className={`flex-[1] relative w-full font-text  ${videoShow ? "hidden lg:block" : "block"}`}>
 
                 <div className="h-dvh w-full overflow-y-scroll">
                     <div className="w-full max-w-[1080px] m-auto">
-                        <ChatDisplay chatBottom={chatBottom} chatHeightOffset={chatHeightOffset} messages={messages} partner={partner} readIndex={readIndex} replyTo={replyTo}/>
+                        <ChatDisplay chatBottom={chatBottom} chatHeightOffset={chatHeightOffset} messages={messages} partner={partner} readIndex={readIndex} replyTo={replyTo} />
                     </div>
                 </div>
 

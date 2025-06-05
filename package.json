@@ -10,8 +10,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@daily-co/daily-react": "^0.22.0",
+    "@livekit/components-react": "^2.9.9",
+    "@livekit/components-styles": "^1.1.6",
     "crypto-js": "^4.2.0",
     "emojilib": "^4.0.0",
+    "livekit-client": "^2.13.3",
     "motion": "^12.0.11",
     "next": "14.2.12",
     "react": "^18",

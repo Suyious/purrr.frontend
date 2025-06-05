@@ -59,7 +59,7 @@ export const deriveSharedSecret = async (
 export const encryptMessage = async (
   message: string,
   sharedSecret: CryptoKey,
-  isImage: boolean = false
+  isImage: Boolean = false
 ): Promise<string> => {
   const encoder = new TextEncoder();
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
@@ -75,7 +75,7 @@ export const encryptMessage = async (
 
   const payload = {
     ciphertext: isImage ? arrayBufferToBase64ForImg(ciphertext) : arrayBufferToBase64(ciphertext),
-    iv: arrayBufferToBase64(iv)
+    iv: arrayBufferToBase64(iv.buffer)
   };
 
   return JSON.stringify(payload);

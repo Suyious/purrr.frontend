@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 export const useVideoWebRTC = () => {
     const servers = {
         iceServers: [{
-            urls: ['stun:stun1.1.google.com:19302', 'stun:stun2.1.google.com:19302', ...iceServers]
+            urls: iceServers
         }]
     }
 

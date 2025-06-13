@@ -1,12 +1,13 @@
 import { useRef, useState } from "react";
 
 export const useVideoWebRTC = () => {
-    const servers = {
+    const servers: RTCConfiguration = {
         iceServers: [{
             urls: process.env.NEXT_PUBLIC_TURN_SERVER_URL || "",
             username: process.env.NEXT_PUBLIC_TURN_SERVER_USER || "",
             credential: process.env.NEXT_PUBLIC_TURN_SERVER_PASSWORD || "",
-        }]
+        }],
+        iceTransportPolicy: "relay",
     }
 
     const peerConnection = useRef<RTCPeerConnection | null>(null);
@@ -58,9 +59,9 @@ export const useVideoWebRTC = () => {
         };
 
         peerConnection.current.onicecandidate = async (event) => {
-            console.log('New ICE candidate:', event.candidate);
             if (event.candidate && peerConnection.current?.localDescription) {
                 callback(peerConnection.current.localDescription);
+                console.log('ICE state: ', peerConnection.current.iceConnectionState);
             }
         }
     }

@@ -51,7 +51,14 @@ export const useVideoWebRTC = () => {
             }
         }
 
+        peerConnection.current.oniceconnectionstatechange = () => {
+            if(peerConnection.current) {
+                console.log('ICE state: ', peerConnection.current.iceConnectionState);
+            }
+        };
+
         peerConnection.current.onicecandidate = async (event) => {
+            console.log('New ICE candidate:', event.candidate);
             if (event.candidate && peerConnection.current?.localDescription) {
                 callback(peerConnection.current.localDescription);
             }
